@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+  <title>MediSys | CTA 分析报告</title>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <!-- IonIcons -->
+  <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="/dist/css/google_fonts_source_sans_pro.css" rel="stylesheet">
+  <!-- Custom -->
+  <link rel="stylesheet" href="/webapp/ai/analysis/css/custom.css">
+</head>
+<!--
+BODY TAG OPTIONS:
+=================
+Apply one or more of the following classes to to the body tag
+to get the desired effect
+|---------------------------------------------------------|
+|LAYOUT OPTIONS | sidebar-collapse                        |
+|               | sidebar-mini                            |
+|---------------------------------------------------------|
+-->
+<body class="hold-transition sidebar-mini sidebar-collapse">
+<div class="wrapper">
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <!-- Left navbar links -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+      </li>
+    </ul>
+
+
+    <!-- Right navbar links -->
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#"><i
+            class="fas fa-th-large"></i></a>
+      </li>
+    </ul>
+  </nav>
+  <!-- /.navbar -->
+
+  <!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="/" class="brand-link">
+      <img src="/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
+           style="opacity: .8">
+      <span class="brand-text font-weight-heavy"><b>Medi-</b>Sys</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <img src="/dist/img/avatar3.png" class="img-circle elevation-2" alt="User Image">
+        </div>
+        <div class="info">
+          <a href="#" class="d-block">User</a>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+    </div>
+
+
+    <!-- Main content -->
+    <div class="content container-fluid">
+      <span id="mycontent"></span>
+
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">主动脉3D重建</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool card-auto-collapse" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <div id="area3D" style="width: 100%;height: 700px"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">中心线3D重建</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool card-auto-collapse" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <div id="area3D2" style="width: 100%;height: 700px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="card card-primary">
+            <div class="card-header with-border">
+              <h3 class="card-title">截面参数</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <div id="chart1_legend" class="legend"></div>
+              <br />
+              <div id="chart1" style="height:300px"></div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="col-sm-6">
+          <div class="card card-primary">
+            <div class="card-header with-border">
+              <h3 class="card-title">中心线参数</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <div id="chart2_legend" class="legend"></div>
+              <br />
+              <div id="chart2" style="height:300px"></div>
+            </div>
+            <!-- /.card-body -->
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+  </footer>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED SCRIPTS -->
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- jQuery UI -->
+<script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
+<!-- Bootstrap -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script src="/plugins/jquery-mousewheel/jquery.mousewheel.js"></script>
+<!-- FLOT CHARTS -->
+<!--<script src="/plugins/flot/plugins/jquery.jquery.canvaswrapper.js"></script>-->
+<!--<script src="/plugins/flot/plugins/jquery.colorhelpers.js"></script>-->
+<script src="/plugins/flot/jquery.flot.js"></script>
+<script src="/plugins/flot/plugins/jquery.flot.saturated.js"></script>
+<script src="/plugins/flot/plugins/jquery.flot.browser.js"></script>
+<script src="/plugins/flot/plugins/jquery.flot.drawSeries.js"></script>
+<script src="/plugins/flot/plugins/jquery.flot.uiConstants.js"></script>
+<script src="/plugins/flot/plugins/jquery.flot.symbol.js"></script>
+<script src="/plugins/flot/plugins/jquery.flot.legend.js"></script>
+<script src="/plugins/flot/plugins/jquery.flot.axislabels.js"></script>
+<!-- AdminLTE -->
+<script src="/dist/js/adminlte.js"></script>
+
+<script src="/plugins-custom/three.js/three.min.js"></script>
+<script src="/plugins-custom/three.js/controls/OrbitControls.js"></script>
+
+<script src="/webapp/common/js/uiCommon.js"></script>
+<script src="/webapp/js/tools.js"></script>
+<!--<script src="/webapp/common/js/user.js"></script>-->
+<!--<script src="/webapp/common/js/menu.js"></script>-->
+
+<script src="/webapp/ai/analysis/js/aorta3D.js"></script>
+<script src="/webapp/ai/analysis/js/mychart.js"></script>
+
+<script>
+  let cta_data={};
+  cta_data.url="/webapp/temp/cta/result/json/";
+  // let data1=loadJson(cta_data.url+"mask.json")
+  // console.log("data1:",data1)
+  // show3D("area3D",data1,'#ff244e');
+  // show3D("area3D2",combinexyz(cta_data.url),'#4bda60');
+
+  cta_data.r_long=getJson(cta_data.url+"section_long.json");
+  cta_data.r_short=getJson(cta_data.url+'section_short.json');
+  cta_data.sec_std=getJson(cta_data.url+'section_std.json');
+  let section_mean=getJson(cta_data.url+'section_mean.json');
+
+  let chart1A_data=[], chart1B_data=[],chart1C_data=[];
+  let chart2A_data=[], chart2B_data=[];
+
+  for (let i=0; i<cta_data.r_long.length; i++) {
+    chart1A_data.push([i, cta_data.r_long[i]]);
+    chart1B_data.push([i, cta_data.r_short[i]]);
+    chart1C_data.push([i, cta_data.r_long[i] - cta_data.r_short[i]]);
+
+    chart2A_data.push([i, cta_data.sec_std[i]]);
+    chart2B_data.push([i, section_mean[i]]);
+  }
+
+  var line_data1 = {data : chart1A_data,color: '#3c8dbc',label:"截面最长直径"};
+  var line_data2 = {data : chart1B_data,color: '#00c0ef',label:"截面最短直径"};
+  var line_data3 = {data:chart1C_data,color:'red',label:"长短径差",};
+  mychart('chart1','chart1_legend',[line_data1,line_data2,line_data3]);
+
+  var line_data1 = {data : chart2A_data,color: '#3c8dbc',label:"标准差"};
+  var line_data2 = {data : chart2B_data,color: '#00c0ef',label:"平均值"};
+  mychart('chart2','chart2_legend',[line_data1,line_data2]);
+
+  //Initialize tooltip on hover
+  $('<div class="tooltip-inner" id="line-chart-tooltip"></div>').css({
+    position: 'absolute',
+    display : 'none',
+    opacity : 0.8
+  }).appendTo('body');
+
+  $('#chart1').bind('plothover', function (event, pos, item) {
+    console.log("hover",event,pos,item);
+    if (item) {
+      var x = item.datapoint[0].toFixed(2), y = item.datapoint[1].toFixed(2);
+
+      $('#line-chart-tooltip').html(item.series.label + ' of ' + x + ' = ' + y)
+              .css({
+                top: item.pageY + 5,
+                left: item.pageX + 5
+              })
+              .fadeIn(200)
+    } else {
+      $('#line-chart-tooltip').hide()
+    }
+  });
+</script>
+
+<script>
+  // menuActive("analysis-cta");
+  setTimeout('closeCard3D()',300);
+  function closeCard3D(){$('.card-auto-collapse').click()}
+</script>
+
+</body>
+</html>

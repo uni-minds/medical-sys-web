@@ -1,0 +1,30 @@
+{
+  "devDependencies": {
+    "@types/jquery": "^3.5.14",
+    "@types/jquery.validation": "^1.16.7",
+    "clean-webpack-plugin": "^4.0.0",
+    "html-webpack-plugin": "^5.5.0",
+    "jqGrid": "^5.7.0",
+    "jquery-ui": "^1.13.2",
+    "jquery-validation": "^1.19.5",
+    "select2-bootstrap4-theme": "^1.0.0",
+    "ts-loader": "^9.3.1",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "^4.11.0"
+  },
+  "devServer": {
+    "static": "./"
+  },
+  "scripts": {
+    "build": "webpack",
+    "start": "webpack serve --mode development --open"
+  },
+  "dependencies": {
+    "@types/select2": "^4.0.55",
+    "admin-lte": "^3.2.0",
+    "datatables.net-bs4": "^1.12.1",
+    "datatables.net-rowgroup-bs4": "^1.2.0",
+    "hls.js": "^1.2.2"
+  }
+}

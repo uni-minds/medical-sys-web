@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+  <title>MediSys | 深度检索报告</title>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <!-- IonIcons -->
+  <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="/dist/css/google_fonts_source_sans_pro.css" rel="stylesheet">
+  <!-- Custom -->
+  <link rel="stylesheet" href="/webapp/cta/css/custom.css">
+</head>
+<!--
+BODY TAG OPTIONS:
+=================
+Apply one or more of the following classes to to the body tag
+to get the desired effect
+|---------------------------------------------------------|
+|LAYOUT OPTIONS | sidebar-collapse                        |
+|               | sidebar-mini                            |
+|---------------------------------------------------------|
+-->
+<body class="hold-transition sidebar-mini sidebar-collapse">
+<div class="wrapper">
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <!-- Left navbar links -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+      </li>
+    </ul>
+
+
+    <!-- Right navbar links -->
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#"><i
+            class="fas fa-th-large"></i></a>
+      </li>
+    </ul>
+  </nav>
+  <!-- /.navbar -->
+
+  <!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="/" class="brand-link">
+      <img src="/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
+           style="opacity: .8">
+      <span class="brand-text font-weight-heavy"><b>Medi-</b>Sys</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <img src="/dist/img/avatar3.png" class="img-circle elevation-2" alt="User Image">
+        </div>
+        <div class="info">
+          <a href="#" class="d-block">User</a>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+    </div>
+
+
+    <!-- Main content -->
+    <div class="content container-fluid">
+      <span id="mycontent"></span>
+
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">原始图像</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <div class="align-middle">
+              <img id="img-raw" src="/webapp/temp/deepsearch/result/img-raw.png">
+                <p id="img-describe0">InstanceID: NA</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">相似图像1</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <div class="align-content-center">
+              <img id="img-result1" src="/webapp/temp/deepsearch/result/img-result1.png">
+                <p id="img-describe1">InstanceID: NA</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">相似图像2</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <img id="img-result2" src="/webapp/temp/deepsearch/result/img-result2.png">
+              <p id="img-describe2">InstanceID: NA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">相似图像3</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <img id="img-result3" src="/webapp/temp/deepsearch/result/img-result3.png">
+              <p id="img-describe3">InstanceID: NA</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">相似图像4</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <img id="img-result4" src="/webapp/temp/deepsearch/result/img-result4.png">
+              <p id="img-describe4">InstanceID: NA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">相似图像5</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <img id="img-result5" src="/webapp/temp/deepsearch/result/img-result5.png">
+              <p id="img-describe5">InstanceID: NA</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">相似图像6</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <img id="img-result6" src="/webapp/temp/deepsearch/result/img-result6.png">
+              <p id="img-describe6">InstanceID: NA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">相似图像7</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <img id="img-result7" src="/webapp/temp/deepsearch/result/img-result7.png">
+              <p id="img-describe7">InstanceID: NA</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">相似图像8</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <img id="img-result8" src="/webapp/temp/deepsearch/result/img-result8.png">
+              <p id="img-describe8">InstanceID: NA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="card card-primary col-xs-4">
+            <div class="card-header with-border">
+              <h3 class="card-title">相似图像9</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body chart-responsive">
+              <img id="img-result9" src="/webapp/temp/deepsearch/result/img-result9.png">
+              <p id="img-describe9">InstanceID: N/A</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+  </footer>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED SCRIPTS -->
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- jQuery UI -->
+<script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
+<!-- Bootstrap -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script src="/plugins/jquery-mousewheel/jquery.mousewheel.js"></script>
+<!-- FLOT CHARTS -->
+<script src="/plugins/flot-user/jquery.canvaswrapper.js"></script>
+<script src="/plugins/flot-user/jquery.colorhelpers.js"></script>
+<script src="/plugins/flot-user/jquery.flot.js"></script>
+<script src="/plugins/flot-user/jquery.flot.saturated.js"></script>
+<script src="/plugins/flot-user/jquery.flot.browser.js"></script>
+<script src="/plugins/flot-user/jquery.flot.drawSeries.js"></script>
+<script src="/plugins/flot-user/jquery.flot.uiConstants.js"></script>
+<script src="/plugins/flot-user/jquery.flot.symbol.js"></script>
+<script src="/plugins/flot-user/jquery.flot.legend.js"></script>
+<script src="/plugins/flot-user/jquery.flot.axislabels.js"></script>
+<!-- AdminLTE -->
+<script src="/dist/js/adminlte.js"></script>
+
+<script src="/webapp/common/js/ui_common.js"></script>
+<script src="/webapp/common/js/user.js"></script>
+<script src="/webapp/common/js/menu.js"></script>
+
+<script>
+  menuActive("analysis-deepsearch");
+</script>
+
+<script>
+  $('#img-describe0').text('InstanceID: 1.2.840.113704.7.1.0.84134333177131.1547724568.42840');
+  $('#img-describe1').text('InstanceID: 1.2.840.113704.7.1.0.84134333177131.1541814968.41561');
+  $('#img-describe2').text('InstanceID: 1.2.840.113704.7.1.0.18078205855192.1547726891.27226');
+  $('#img-describe3').text('InstanceID: 1.2.840.113704.7.1.0.84134333177131.1547725195.67180');
+  $('#img-describe4').text('InstanceID: 1.2.840.113704.7.1.0.84134333177131.1547725170.67110');
+  $('#img-describe5').text('InstanceID: 1.2.840.113704.7.1.0.84134323152143.1547456784.23356');
+  $('#img-describe6').text('InstanceID: 1.2.840.113704.7.1.0.82346763642143.1512316884.24582');
+  $('#img-describe7').text('InstanceID: 1.2.840.113704.7.1.0.84123423152143.1547568484.26556');
+  $('#img-describe8').text('InstanceID: 1.2.840.113704.7.1.0.12314674967433.1575587484.48624');
+  $('#img-describe9').text('InstanceID: NA');
+</script>
+
+</body>
+</html>

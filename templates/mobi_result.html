@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+  <title>{{.title}}</title>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="/dist/css/google_fonts_source_sans_pro.css" rel="stylesheet">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <!-- Left navbar links -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+      </li>
+    </ul>
+
+    <!-- Right navbar links -->
+    <ul class="navbar-nav ml-auto">
+      <!-- Notifications Dropdown Menu -->
+      <li class="nav-item dropdown">
+        <a class="nav-link" data-toggle="dropdown" href="#">
+          <i class="far fa-bell"></i>
+          <span id="user-message-remain-count" class="badge badge-warning navbar-badge">0</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+          <a href="#" class="dropdown-item">
+            <i class="fas fa-file mr-2"></i> 0 new reports
+            <span class="float-right text-muted text-sm">0 days</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#"><i
+                  class="fas fa-th-large"></i></a>
+      </li>
+    </ul>
+  </nav>
+  <!-- /.navbar -->
+
+  <!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="/" class="brand-link">
+      <img src="/dist/img/AdminLTELogo.png" alt="Logo" class="brand-image img-circle elevation-3"
+           style="opacity: .8">
+      <span class="brand-text font-weight-heavy "><b>Medi-</b>Sys</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <img src="/dist/img/avatar3.png" class="img-circle elevation-2" alt="User Image">
+        </div>
+        <div class="info">
+          <a href="#" class="d-block">User</a>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="card card-primary">
+        <div class="card-header">
+          <h4 class="card-title">{{.card_title}}</h4>
+        </div>
+        <div class="card-body">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <button type="button" class="btn btn-default">消息编号</button>
+            </div>
+            <textarea class="form-control disabled" rows="1" id="tx-message-id">{{.pipeline}}</textarea>
+          </div>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <button type="button" class="btn btn-default">消息时间</button>
+            </div>
+            <div class="form-control disabled" id="tx-message-time">{{.tx_message_time}}</div>
+          </div>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <button type="button" class="btn btn-default">消息内容</button>
+            </div>
+            <textarea class="form-control disabled" rows="4" id="tx-message-content">{{.tx_message_content}}</textarea>
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <button type="button" class="btn btn-info">沙箱编号</button>
+            </div>
+            <div class="form-control disabled" id="tx-sandbox-id">{{.tx_sandbox_id}}</div>
+          </div>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <button type="button" class="btn btn-info">沙箱类型</button>
+            </div>
+            <div class="form-control disabled" id="tx-sandbox-type">{{.tx_sandbox_type}}</div>
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <button type="button" class="btn btn-warning">初始管道</button>
+            </div>
+            <div class="form-control disabled" id="tx-pipeline-init">{{.tx_pipeline_init}}</div>
+          </div>
+          <div class="input-group mb-3" onclick="window.location.href={{.tx_pipeline_upstream}}">
+            <div class="input-group-prepend">
+              <button type="button" class="btn btn-warning">上层消息</button>
+            </div>
+            <div class="form-control disabled" id="tx-pipeline-upstream">{{.tx_pipeline_upstream}}</div>
+          </div>
+          <div class="input-group mb-3" onclick="window.location.href={{.tx_pipeline_downstream}}">
+            <div class="input-group-prepend">
+              <button type="button" class="btn btn-warning">下层消息</button>
+            </div>
+            <div class="form-control disabled" id="tx-pipeline-downstream">{{.tx_pipeline_downstream}}</div>
+          </div>
+        </div>
+      </div>
+      <!-- /.card -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  <footer class="main-footer">Copyright</footer>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+<script>
+  let api = {{.data_api}}
+</script>
+<script src="/plugins/jquery/jquery.min.js"></script>
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/dist/js/adminlte.min.js"></script>
+
+<!-- Custom scripts -->
+<script src="/webapp/mobi/js/uiCommon.js"></script>
+<script src="/webapp/mobi/js/myresult.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+  <title>{{.title}}</title>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="/dist/css/google_fonts_source_sans_pro.css" rel="stylesheet">
+  <!-- jsGrid -->
+  <link rel="stylesheet" href="/plugins/jsgrid/jsgrid.min.css">
+  <link rel="stylesheet" href="/plugins/jsgrid/jsgrid-theme.min.css">
+  <!-- jquery-ui -->
+  <link rel="stylesheet" href="/plugins/jquery-ui/jquery-ui.min.css">
+  <link rel="stylesheet" href="/plugins/jquery-ui/jquery-ui.theme.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <!-- Left navbar links -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+      </li>
+    </ul>
+
+    <!-- Right navbar links -->
+    <ul class="navbar-nav ml-auto">
+      <!-- Notifications Dropdown Menu -->
+      <li class="nav-item dropdown">
+        <a class="nav-link" data-toggle="dropdown" href="#">
+          <i class="far fa-bell"></i>
+          <span id="user-message-remain-count" class="badge badge-warning navbar-badge">0</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+          <a href="#" class="dropdown-item">
+            <i class="fas fa-file mr-2"></i> 0 new reports
+            <span class="float-right text-muted text-sm">0 days</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#"><i
+            class="fas fa-th-large"></i></a>
+      </li>
+    </ul>
+  </nav>
+  <!-- /.navbar -->
+
+  <!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="/" class="brand-link">
+      <img src="/dist/img/AdminLTELogo.png" alt="Logo" class="brand-image img-circle elevation-3"
+           style="opacity: .8">
+      <span class="brand-text font-weight-heavy "><b>Medi-</b>Sys</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <img src="/dist/img/avatar3.png" class="img-circle elevation-2" alt="User Image">
+        </div>
+        <div class="info">
+          <a href="#" class="d-block">User</a>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <div id="main-content" class="content">
+      <div id="user-table"></div>
+    </div>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+    <div class="p-3">
+      <h5>Title</h5>
+      <p>Sidebar content</p>
+    </div>
+  </aside>
+  <!-- /.control-sidebar -->
+  <div id="like_button_container"></div>
+  <!-- Main Footer -->
+  <footer class="main-footer">
+  </footer>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED SCRIPTS -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- jsGrid -->
+<script src="/plugins/jsgrid/jsgrid.min.js"></script>
+<script src="/plugins/jsgrid/i18n/jsgrid-zh-cn.js"></script>
+<!-- jquery-ui -->
+<script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
+<!-- jquery-validation -->
+<script src="/plugins/jquery-validation/jquery.validate.min.js"></script>
+<script src="/plugins/jquery-validation/localization/messages_zh.min.js"></script>
+
+<!-- Custom scripts -->
+<script>
+  let navMenuActive="{{.page_id}}";
+</script>
+<script src="/webapp/common/js/uiCommon.js"></script>
+<script src="/webapp/manage/manage-user.js"></script>
+
+</body>
+
+<div id="user-editor-dialog" title="编辑器">
+  <form id="user-editor-form">
+      <div class="card-body">
+      <div class="form-group mb-3">
+        <label for="username">用户名</label>
+        <div class="input-group">
+          <input type="text" name="username" class="form-control" id="username">
+          <div class="input-group-append"><div class="input-group-text"><span class="fas fa-user"></span></div></div>
+        </div>
+      </div>
+
+      <div class="form-group mb-3">
+        <label for="realname">真实姓名</label>
+        <div class="input-group">
+          <input type="text" name="realname" class="form-control" id="realname">
+          <div class="input-group-append"><div class="input-group-text"><span class="fas fa-address-card"></span></div></div>
+        </div>
+      </div>
+
+      <div class="form-group mb-3">
+        <label for="email">邮箱地址</label>
+        <div class="input-group">
+          <input type="email" name="email" class="form-control" id="email">
+          <div class="input-group-append"><div class="input-group-text"><span class="fas fa-envelope"></span></div></div>
+        </div>
+      </div>
+
+      <div class="form-group mb-3">
+        <label for="password1">密码</label>
+        <div class="input-group">
+          <input type="password" name="password1" class="form-control password" id="password1">
+          <div class="input-group-append"><div class="input-group-text"><span class="fas fa-lock"></span></div></div>
+        </div>
+      </div>
+
+      <div class="form-group mb-0">
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" name="terms" class="custom-control-input" id="terms">
+          <label class="custom-control-label" for="terms">账户已激活。</label>
+        </div>
+      </div>
+      </div>
+      <!-- /.card-body -->
+      <div class="card-footer">
+         <button type="submit" class="btn btn-primary">提交注册</button>
+      </div>
+  </form>
+</div>
+</html>
