@@ -1,7 +1,12 @@
+require("jquery")
+require("jquery-validation")
+require("toastr")
+
+import {PostData} from "../common/common";
+import $ from "jquery"
+import "jquery-validation"
 // @ts-ignore
 import * as toastr from "toastr/build/toastr.min.js"
-
-let masterApi = "/api/v1/user/login"
 
 $.validator.setDefaults({
     submitHandler: function () {
@@ -12,15 +17,14 @@ $.validator.setDefaults({
         };
         toastr.info('正在登录中……')
 
-        $.ajax({
-            method: 'POST',
-            url: masterApi,
-            data: JSON.stringify(userLoginInfo)
-        }).done((resp) => {
-            if (resp.msg === "success") {
-                toastr.success('登录成功。')
+        PostData('/api/v1/user/login', userLoginInfo).then((data) => {
+            if (data == undefined) {
+                toastr.error("服务器无反馈")
+            }
+            let resp = data as ServerResponse
+            if (resp.msg == "success") {
+                toastr.success("登陆成功")
                 window.location.href = resp.data
-
             } else {
                 toastr.error(resp.msg)
             }

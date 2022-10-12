@@ -1,4 +1,4 @@
-import {OpenLabelTool, TimeFormat, GetData} from "../common/common";
+import {OpenLabelTool, TimeFormat, GetData, BuildURL} from "../common/common";
 import "select2"
 import {class_table_object} from "./class_table";
 import $ from "jquery";
@@ -21,7 +21,7 @@ export class class_list_label {
     objSelectorHeader
 
     ref_card_body: JQuery | undefined
-    ref_table: any
+    obj_table: class_table_object |undefined
 
     userSelectGroupId = 0
     userSelectViewId = ""
@@ -59,6 +59,7 @@ export class class_list_label {
     async Start() {
         let num = 12 / this.medialist_selectors.length
         for (const selector of this.medialist_selectors) {
+            console.log("create selector:",selector)
             let obj_selector_group = $(`<div class="col-md-${num}"></div>`)
             let optionTitle = $(`<div class="p-0 text-info">${selector.name}</div>`)
             let optionGroup = $('<div class="pb-0" style="width:100%"></div>')
@@ -83,9 +84,6 @@ export class class_list_label {
 
                 case "selectScreenGroupId":
                     GetData(`${this.api_root}/group?action=getlistfull&type=${selector.type}`).then((data) => {
-                        if (!data) {
-                            return
-                        }
                         let resp = data as ServerResponse
                         if (resp.code == 200) {
                             let obj2 = this.objScreenGroupSelector
@@ -190,7 +188,7 @@ export class class_list_label {
                     this.userSelectGroupId = groupId
                     this.userSelectViewId = ""
 
-                    let getViewUrl = `${this.api_root}/group_${this.media_type}/${groupId}/view`
+                    let getViewUrl = `${this.api_root}/medialist/group_${this.media_type}/${groupId}/view`
                     if (this.userIgnoreProgressCheck) {
                         getViewUrl += '&ignoreProgressCheck=1'
                     }
@@ -337,8 +335,7 @@ export class class_list_label {
             formatter: this.LabelReviewRender
         })
         fields.push({label: "备注", name: "memo", width: 80, hidden: false, summaryType: '', formatter: undefined})
-
-        let obj_table = new class_table_object(ref_media_table, `${this.api_root}/medialist/group_${this.media_type}/${this.userSelectGroupId}/list`, fields, [])
+        this.obj_table = new class_table_object(ref_media_table, BuildURL(this.urlPullData, this.urlPullDataParams), fields, [])
     }
 
     /**
@@ -407,7 +404,7 @@ export class class_list_label {
 
         // 存在标注者
         const author = data_col[0]
-        console.warn("only show first author", author)
+        // console.warn("only show first author", author)
         obj.text(author.realname).attr("label-uuid", author.uuid)
         switch (author.status) {
             case "using":
@@ -436,7 +433,7 @@ export class class_list_label {
             return ""
         }
         const reviewer = data_col[0]
-        console.warn("only show first reviewer", reviewer)
+        // console.warn("only show first reviewer", reviewer)
 
         const media_uuid = data_row.media
         const label_uuid = reviewer.uuid
@@ -462,7 +459,6 @@ export class class_list_label {
                 break
 
             case "free":
-            case "":
                 obj.addClass("btn-default").text("未审阅")
                 break
 
@@ -486,7 +482,6 @@ export class class_list_label {
         )
     }
 
-
     OpBindOnAuthorButtons(parent: JQuery) {
         //custom-btn-author
         parent.on("mouseenter", ".custom-btn-author", (e: any) => {
@@ -506,7 +501,7 @@ export class class_list_label {
                 label_uuid = tmp
             }
 
-            console.warn("btn_mouse_enter", media_uuid, label_uuid)
+            // console.warn("btn_mouse_enter", media_uuid, label_uuid)
 
             let url_summary = `${this.api_labelsys}/${media_uuid}/label/summary?do=author`
 
@@ -545,7 +540,7 @@ export class class_list_label {
                     case 30001:
                         //不存在标注信息
                         btn.attr('title', "未标注").text("开始标注").addClass("btn-info").on("click", () => {
-                            OpenLabelTool(this.ui_root, "stream", media_uuid, 'author', "author")
+                            OpenLabelTool(this.ui_root, "stream", media_uuid, 'author', undefined)
                         })
                         break
 
@@ -573,7 +568,7 @@ export class class_list_label {
                 label_uuid = tmp
             }
 
-            console.warn("btn_mouse_leave", media_uuid, label_uuid)
+            // console.warn("btn_mouse_leave", media_uuid, label_uuid)
 
             let url_summary = `${this.api_labelsys}/${media_uuid}/label/summary?do=author`
             GetData(url_summary).then(data => {

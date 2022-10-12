@@ -3,13 +3,14 @@ import $, {map, post} from "jquery"
 import "./labelsys_communicate"
 import {export_usr_json, import_usr_json} from "./labelsys_communicate";
 import {BuildURL, PostData} from "../common/common";
+import toastr = require("toastr");
 
 /**
  * 标注数据存储器
  */
 export class LabelData {
-    private readonly data_crf: Map<string, crf_meta>
-    private readonly data_groups: Map<string, crf_meta>
+    private readonly data_crf = new Map<string, crf_meta>()
+    private readonly data_groups = new Map<string, crf_meta>()
     private data_usr: LabelTotalData
 
     data_media_uuid: string
@@ -18,8 +19,8 @@ export class LabelData {
     data_submit_level: string
     data_label_uuid: string
 
-    flag_init_crf: boolean
-    flag_init_usr: boolean
+    flag_init_crf = false
+    flag_init_usr = false
 
     url_server_crf: string
     url_server_usr: string
@@ -28,20 +29,15 @@ export class LabelData {
         this.data_media_uuid = url_info.path_indexer
         this.data_media_class = url_info.path_class
         this.data_submit_level = url_info.path_base
-        this.data_crf_type = url_info.params.get("crf")
-        this.data_label_uuid = url_info.params.get("label_uuid")
-
-        this.flag_init_crf = false
-        this.flag_init_usr = false
+        let crf = url_info.params.get("crf")
+        let label_uuid = url_info.params.get("label_uuid")
+        this.data_crf_type = crf ? crf : ""
+        this.data_label_uuid = label_uuid ? label_uuid : ""
 
         this.url_server_crf = `${api_root}/label/crf?format=json`;
-
         this.url_server_usr = `${api_root}/label/${this.data_submit_level}`
 
-
         this.data_usr = {c: 0, q: 0, frames: []}
-        this.data_crf = new Map<string, crf_meta>()
-        this.data_groups = new Map<string, crf_meta>()
     }
 
     set_crf_data(data: crf_meta[]) {
@@ -68,19 +64,6 @@ export class LabelData {
 
     set_usr_data(str: string) {
         this.data_usr = import_usr_json(str)
-        // // console.groupCollapsed("set label raw data")
-        // try {
-        //     // console.log("JSON:", json)
-        //     let d = JSON.parse(str)
-        //     this.data.q = !!d.q ? d.q : null
-        //     this.data.c = !!d.c ? d.c : null
-        //     this.data.frames = !!d.frames ? d.frames : []
-        // } catch (e) {
-        //     this.data.q = null
-        //     this.data.c = null
-        //     this.data.frames = []
-        // }
-        // console.groupEnd()
     }
 
     get_usr_data(): string {
@@ -119,13 +102,17 @@ export class LabelData {
     }
 
     set_page(page: number, data: LabelPage) {
-        console.log(`set page=${page}:`, data)
+        // console.log(`set page=${page}:`, data)
         this.data_usr.frames[page] = data
-        this.upload()
+        this.upload().then((resp) => {
+            if (resp.code != 200) {
+                toastr.error(resp.msg, resp.code.toString())
+            }
+        })
     }
 
     get_page(page: number): LabelPage | null {
-        if (this.has(page)) {
+        if (this.has_page(page)) {
             return this.data_usr.frames[page]
         } else {
             return null
@@ -151,36 +138,36 @@ export class LabelData {
         return this.data_groups.get(id)
     }
 
-    has(page: number): boolean {
+    has_page(page: number): boolean {
         const data = this.data_usr
         if (this.flag_init_usr && data.frames) {
-            return (page < data.frames.length) ? (!!data.frames[page]) : false
+            return (page > data.frames.length) ? false : !!data.frames[page]
         } else {
             return false
         }
     }
 
-    after(page: number): number {
+    after_page(page: number): number {
         let t = this.data_usr.frames.length
         page = (page < t) ? page : 0
         for (let i = 0; i < t; i++) {
             page = (page === (t - 1)) ? 0 : page + 1
-            if (this.has(page)) return page
+            if (this.has_page(page)) return page
         }
         return -1
     }
 
-    before(page: number): number {
+    before_page(page: number): number {
         let t = this.data_usr.frames.length
         page = (page < t) ? page : t - 1
         for (let i = 0; i < t; i++) {
             page = (page === 0) ? t - 1 : page - 1
-            if (this.has(page)) return page
+            if (this.has_page(page)) return page
         }
         return -1
     }
 
-    public async DownloadCrf() {
+    async DownloadCrf() {
         let result = await common.GetData(this.url_server_crf) as ServerResponse
         if (result.code === 200) {
             this.set_crf_data(result.data)
@@ -188,12 +175,12 @@ export class LabelData {
                 // mp.onCRFFinishDownload()
                 // this.downloadFull()
                 this.flag_init_crf = true
-                console.debug("定义标注节点(CRF)同步完成", "usr_crf", this.get_crf_data_all())
+                console.debug("定义标注节点(CRF)同步完成", this.get_crf_data_all())
             }
         }
     }
 
-    public async DownloadUsr() {
+    async DownloadUsr() {
         // console.debug("usr_url:",this.url_server_usr)
         let resp = await common.GetData(this.url_server_usr) as ServerResponse
         if (resp.code === 200) {
@@ -211,11 +198,13 @@ export class LabelData {
                     break
             }
             this.set_usr_data(data)
-            console.debug("用户标注数据(USR)同步完成 usr_dat", JSON.parse(this.get_usr_data()))
+            console.debug("用户标注数据(USR)同步完成", JSON.parse(this.get_usr_data()))
             this.flag_init_usr = true
-            // mp.onGlobalFinishDownload()
+        } else if (resp.code == 10001) {
+            console.debug("数据无标注")
+            this.flag_init_usr = true
         } else {
-            console.warn(`标注数据同步错误：${resp.msg}`)
+            toastr.error(resp.msg, `标注数据同步错误`)
         }
     }
 

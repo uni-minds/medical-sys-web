@@ -4,38 +4,34 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-
   <title>MediSys</title>
-
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="/plugins/adminlte/css/adminlte.min.css">
   <!-- Google Font: Source Sans Pro -->
   <link href="/dist/css/google_fonts_source_sans_pro.css" rel="stylesheet">
-<!--  &lt;!&ndash; jsGrid &ndash;&gt;-->
-<!--  <link rel="stylesheet" href="/plugins/jsgrid/jsgrid.min.css">-->
-<!--  <link rel="stylesheet" href="/plugins/jsgrid/jsgrid-theme.min.css">-->
   <!-- jqGrid -->
-<!--  <link rel="stylesheet" href="/plugins/jqGrid/css/ui.jqgrid-bootstrap5.css">-->
   <link rel="stylesheet" href="/plugins/jqGrid/css/ui.jqgrid-bootstrap4.css">
-<!--  <link rel="stylesheet" href="/plugins/jqGrid/css/ui.jqgrid-bootstrap.css">-->
   <!-- jquery-ui -->
   <link rel="stylesheet" href="/plugins/jquery-ui-dist/jquery-ui.min.css">
   <link rel="stylesheet" href="/plugins/jquery-ui-dist/jquery-ui.theme.min.css">
   <!-- Select2 -->
   <link rel="stylesheet" href="/plugins/select2/css/select2.min.css">
   <link rel="stylesheet" href="/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
-
+  <!-- Toastr -->
+  <link rel="stylesheet" href="/plugins/toastr/toastr.min.css">
+  <link rel="stylesheet" type="text/css" href="/dist/css/labelsys.css" />
 
   <script src="/plugins/jquery/jquery.min.js"></script>
   <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="/plugins/adminlte/js/adminlte.min.js"></script>
   <!-- Select2 -->
   <script src="/plugins/select2/js/select2.full.min.js"></script>
-<!--  &lt;!&ndash; jsGrid &ndash;&gt;-->
-<!--  <script src="/plugins/jsgrid/jsgrid.min.js"></script>-->
-<!--  <script src="/plugins/jsgrid/i18n/jsgrid-zh-cn.js"></script>-->
   <!-- jquery-ui -->
   <script src="/plugins/jquery-ui-dist/jquery-ui.min.js"></script>
   <!-- jquery-validation -->
@@ -52,32 +48,8 @@
         <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
       </li>
     </ul>
-
-    <!-- Right navbar links -->
-    <ul class="navbar-nav ml-auto">
-      <!-- Notifications Dropdown Menu -->
-      <li class="nav-item dropdown">
-        <a class="nav-link" data-toggle="dropdown" href="#">
-          <i class="far fa-bell"></i>
-          <span id="user-message-remain-count" class="badge badge-warning navbar-badge">0</span>
-        </a>
-        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-          <a href="#" class="dropdown-item">
-            <i class="fas fa-file mr-2"></i> 0 new reports
-            <span class="float-right text-muted text-sm">0 days</span>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
-        </div>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#"><i
-                class="fas fa-th-large"></i></a>
-      </li>
-    </ul>
   </nav>
   <!-- /.navbar -->
-
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
@@ -88,7 +60,7 @@
     </a>
 
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div id="menu-left" class="sidebar">
       <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="image">
@@ -101,8 +73,7 @@
 
       <!-- Sidebar Menu -->
       <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-        </ul>
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false"></ul>
       </nav>
       <!-- /.sidebar-menu -->
     </div>
@@ -123,8 +94,7 @@
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
-  <footer class="main-footer">Copyright</footer>
-
+  <footer id="main-footer" class="main-footer"></footer>
   <!-- Control Sidebar -->
   <aside class="control-sidebar control-sidebar-dark">
     <!-- Control sidebar content goes here -->
@@ -132,9 +102,6 @@
   <!-- /.control-sidebar -->
 </div>
 <!-- ./wrapper -->
-
-
 <script src="{{.custom_scripts}}"></script>
-
 </body>
 </html>

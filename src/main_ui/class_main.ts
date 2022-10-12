@@ -1,7 +1,7 @@
 import {class_list_label} from "./class_list_label";
 import {class_list_screen} from "./class_list_screen";
 
-export class Class_main {
+export class class_main {
     obj_main: JQuery
     root_api = "/api/v1"
     root_ui = "/ui"

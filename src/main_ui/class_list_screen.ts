@@ -1,8 +1,10 @@
 import $ from "jquery"
-import {GetData, BuildURL} from "../common/common";
+import {GetData, BuildURL, PostData} from "../common/common";
 import Swal from "sweetalert2"
 import * as events from "events";
 import {class_table_object} from "./class_table"
+import toastr = require("toastr");
+import {ShowHisResult} from "../common/search_his";
 
 
 export class class_list_screen {
@@ -28,9 +30,9 @@ export class class_list_screen {
     Start() {
         let url = `${this.root_api}/group?action=getlistfull&type=screen`
 
-        GetData(url).then((data)=>{
+        GetData(url).then((data) => {
             if (!data) {
-                alert("Server failed")
+                toastr.error("服务器无数据反馈")
                 return
             }
 
@@ -71,6 +73,7 @@ export class class_list_screen {
             let gname = (v.Name == "") ? `G_${gid}` : v.Name
 
             let obj = $(`<li class="nav-item"><a id="groupid_${gid}" class="nav-link" href="#" data-toggle="tab">${gname}</a></li>`).on("click", () => {
+                toastr.info(gname, "正在加载数据分组：")
                 this.CreateCardBody(gid, 1);
             });
             $("#group_ids").append(obj)
@@ -78,29 +81,104 @@ export class class_list_screen {
     }
 
     CreateCardBody(gid: string, show_page: number) {
+        console.log("load body", this.cardBody, this.obj_table)
         if (!this.cardBody) {
             this.cardBody = $("<div class='card-body p-0'/>");
             this.cardContainer?.append(this.cardBody);
         }
 
+        // let url = `${this.root_api}/screen_list?gid=${gid}`
+        let url = `${this.root_api}/medialist/group_media/${gid}/screen`
+
         if (!this.obj_table) {
-            let fields:jqGridField[] = []
-            fields.push({label: "PatientID", name: "patient_id", width: 80,hidden: false, summaryType: '',formatter:undefined})
-            fields.push({label: "SeriesID", name: "series_id", width: 100,hidden: false, summaryType: '',formatter:undefined})
-            fields.push({label: "StudiesID", name: "studies_id", width: 100,hidden: true, summaryType: 'sum',formatter:undefined})
-            fields.push({label: "实例数", name: "instance_count", width: 80,hidden: false, summaryType: '',formatter:undefined})
-            fields.push({label: "检查时间", name: "studies_datetime", width: 80,hidden: false, summaryType: '',formatter:undefined})
-            fields.push({label: "上传时间", name: "record_datetime", width: 80,hidden: false, summaryType: '',formatter:undefined})
-            fields.push({label: "进度", name: "progress", width: 80,hidden: false, summaryType: '',formatter:undefined})
-            fields.push({label: "标注", name: "author", width: 80,hidden: false, summaryType: '',formatter:undefined})
-            fields.push({label: "审阅", name: "reviewer", width: 80,hidden: false, summaryType: '',formatter:undefined})
-            fields.push({label: "备注", name: "memo", width: 80,hidden: false, summaryType: '',formatter:undefined})
-            fields.push({label: "操作", name: "oprRender", width: 80,hidden: false, summaryType: '',formatter: this.oprRender})
+            let fields: jqGridField[] = []
+            fields.push({
+                label: "PatientID",
+                name: "patient_id",
+                width: 80,
+                hidden: false,
+                summaryType: '',
+                formatter: undefined
+            })
+            fields.push({
+                label: "SeriesID",
+                name: "series_id",
+                width: 100,
+                hidden: false,
+                summaryType: '',
+                formatter: undefined
+            })
+            fields.push({
+                label: "StudiesID",
+                name: "studies_id",
+                width: 100,
+                hidden: true,
+                summaryType: 'sum',
+                formatter: undefined
+            })
+            fields.push({
+                label: "实例数",
+                name: "instance_count",
+                width: 80,
+                hidden: false,
+                summaryType: '',
+                formatter: undefined
+            })
+            fields.push({
+                label: "检查时间",
+                name: "studies_datetime",
+                width: 80,
+                hidden: false,
+                summaryType: '',
+                formatter: undefined
+            })
+            fields.push({
+                label: "上传时间",
+                name: "record_datetime",
+                width: 80,
+                hidden: false,
+                summaryType: '',
+                formatter: undefined
+            })
+            fields.push({
+                label: "进度",
+                name: "progress",
+                width: 80,
+                hidden: false,
+                summaryType: '',
+                formatter: undefined
+            })
+            fields.push({
+                label: "标注",
+                name: "author",
+                width: 80,
+                hidden: false,
+                summaryType: '',
+                formatter: undefined
+            })
+            fields.push({
+                label: "审阅",
+                name: "reviewer",
+                width: 80,
+                hidden: false,
+                summaryType: '',
+                formatter: undefined
+            })
+            fields.push({label: "备注", name: "memo", width: 80, hidden: false, summaryType: '', formatter: undefined})
+            fields.push({
+                label: "操作",
+                name: "oprRender",
+                width: 80,
+                hidden: false,
+                summaryType: '',
+                formatter: this.oprRender
+            })
 
-            this.obj_table = new class_table_object(this.cardBody, `${this.root_api}/screen_list`,fields,["patient_id"])
+            this.obj_table = new class_table_object(this.cardBody, url, fields, ["patient_id"])
             this.OpBindOnButtons(this.cardBody)
+        } else {
+            this.obj_table.set_grid_url(url)
         }
-
         // this.obj_table.load(gid, show_page, -1, -1)
     }
 
@@ -114,15 +192,23 @@ export class class_list_screen {
             .attr("patient_id", row.patient_id)
 
         let ref_btn1 = $(`<div class='btn btn-info btn-xs custom-btn-search-his' style="margin-right: 5px">报告</div>`)
-        // this.OpSearchHis(row.patient_id)
+            .on("click", () => {
+                console.log("click report")
+                toastr.info(row.patient_id, "检索病例")
+                ShowHisResult(row.patient_id)
+            })
         let ref_btn2 = $(`<div class='btn btn-primary btn-xs custom-btn-open-screen-tool' style="margin-right: 5px"'>挑图</div>`)
-        // this.OpScreenTool(row.studies_id, row.series_id, row.patient_id, op)
+            .on("click", () => {
+                this.OpScreenTool(row.studies_id, row.series_id, row.patient_id, op)
+            })
 
         obj.append(ref_btn1).append(ref_btn2)
 
         if ((row['progress'] === '待审核' || row['progress'] === '待重审')) {
             let ref_btn3 = $(`<div class='btn btn-dark btn-xs custom-btn-open-screen-tool-review' style="margin-right: 5px">审核</div>`)
-            // this.OpScreenTool(row.studies_id, row.series_id, row.patient_id, "review")
+                .on("click", () => {
+                    this.OpScreenTool(row.studies_id, row.series_id, row.patient_id, "review")
+                })
             obj.append(ref_btn3)
         }
 
@@ -194,14 +280,17 @@ export class class_list_screen {
 
     OpScreenTool(studiesId: string, seriesId: string, patientId: string, submit_level: string) {
         let u = `/api/v1/studies/${studiesId}/series/${seriesId}/screen_getlock`
-        $.get(u, result => {
-            // console.log(result)
-            if (result.code === 200) {
+        GetData(u).then((data) => {
+            if (data == undefined) {
+                return undefined
+            }
+            let resp = data as ServerResponse
+            if (resp.code == 200) {
                 let targetURL = `/ui/screen/studies/${studiesId}/series/${seriesId}/${submit_level}?patient_id=${patientId}`
                 window.open(targetURL, "", 'fullscreen, toolbar=no, menubar=no, scrollbars=no, resizable=no,location=no, status=no')
             } else {
-                console.log(result)
-                alert("其它用户正在标注本视频，请等待或选择其它数据处理。")
+                console.error(resp)
+                toastr.error("其它用户正在标注本视频，请等待或选择其它数据处理。")
             }
         })
     }
@@ -215,12 +304,17 @@ export class class_list_screen {
             media: ""
         }
 
-        $.post(u, JSON.stringify(data), result => {
-            if (result.code === 200) {
+        PostData(u, data).then((data) => {
+            if (data == undefined) {
+                return undefined
+            }
+            let resp = data as ServerResponse
+
+            if (resp.code === 200) {
                 console.log('完成', '本关联实例已隐藏.', 1000)
                 this.obj_table?.reload()
             } else {
-                alert(result.msg)
+                alert(resp.msg)
             }
         });
     }
@@ -263,24 +357,8 @@ export class class_list_screen {
         });
     }
 
-    OpSearchHis(patientId:string) {
-        let u = `/api/v1/his/${patientId}`
-        $.get(u, result => {
-            console.log(result)
-            if (result.code === 200) {
-                let disp = ""
-                if (result.data.length === 0) {
-                    Swal.fire(`未检索到关于病例号< ${patientId} >的诊断信息。`)
-                } else {
-                    // windowResult("查询结果", hisResultAnalysis(result.data), 20000)
-                }
-            } else {
-                Swal.fire(result.msg)
-            }
-        })
-    }
 
-    OpBindOnButtons(parent:JQuery) {
+    OpBindOnButtons(parent: JQuery) {
         parent.on("click", ".custom-btn-open-admin", (e: any) => {
             let p = $(e.target).parent()
             let studies_id = p.attr("studies_id")
@@ -316,14 +394,14 @@ export class class_list_screen {
             }
         })
         //custom-btn-open-screen-tool
-       parent.on("click", ".custom-btn-search-his", (e: any) => {
+        parent.on("click", ".custom-btn-search-his", (e) => {
             let p = $(e.target).parent()
             let studies_id = p.attr("studies_id")
             let series_id = p.attr("series_id")
             let patient_id = p.attr("patient_id")
 
             if (studies_id && series_id && patient_id) {
-                this.OpScreenTool(studies_id, series_id, patient_id, "review")
+                ShowHisResult(patient_id)
             }
         })
     }

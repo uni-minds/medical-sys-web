@@ -5,6 +5,7 @@ import "jqGrid/js/grid.grouping"
 import "jqGrid/js/i18n/grid.locale-cn"
 
 import "datatables.net"
+import * as url from "url";
 
 // @ts-ignore
 $.jgrid.defaults.iconSet = 'fontAwesome';
@@ -41,7 +42,7 @@ export class class_table_object {
             datatype: 'json',
             rownumbers: false,
             height: 1200,
-            rowList: [2, 5, 10, 20, 30, 50],
+            rowList: [5, 10, 20, 30, 50],
             rowNum: 10,
             autowidth: false,
             pager: this.ref_pager,
@@ -69,6 +70,22 @@ export class class_table_object {
         this.page_resize()
     }
 
+    set_grid_url(url:string) {
+        console.log("update grid url:",url)
+        if (url != "") {
+            this.api_data = url
+            this.ref_main.setGridParam({url: url})
+            this.reload()
+        }
+    }
+
+    // data {key:"value",key:"value"}
+    set_grid_post_data(data:any) {
+        if (data != null) {
+            this.ref_main.setGridParam({postData:data})
+            this.reload()
+        }
+    }
 
     page_resize(): boolean {
         try {

@@ -1,6 +1,6 @@
 import $ from "jquery";
 import {LabelData} from "./labelsys_data";
-import {CanvasContainer} from "./entry";
+import {CanvasContainer} from "./labelsys_container";
 const XMLNS = "http://www.w3.org/2000/svg";
 
 /**
@@ -8,12 +8,10 @@ const XMLNS = "http://www.w3.org/2000/svg";
  */
 class BasicPart {
     id: string
-    obj_main: JQuery<SVGElement>
+    obj_svg: JQuery<SVGElement>
 
-    ref_canvas_container: CanvasContainer
+    obj_canvas_container: CanvasContainer
     data_color: string
-    data_width: number
-    data_height: number
     data_offset: WindowInfo
     data_undo: PointHistory[] = []
     data_active: boolean = false
@@ -24,18 +22,29 @@ class BasicPart {
     data_points_ref = new Map<string, JQuery<SVGElement>>()
 
     constructor(id: string, canvas_container: CanvasContainer, color: string, qualified_name: string) {
-        this.obj_main = this.new_svg(qualified_name).attr("id", id).attr("fill", color)
+        this.obj_svg = this.new_svg(qualified_name).attr("id", id).attr("fill", color)
 
         this.id = id
 
-        this.ref_canvas_container = canvas_container
+        this.obj_canvas_container = canvas_container
         this.data_color = color
-        this.data_width = canvas_container.get_window_info().width
-        this.data_height = canvas_container.get_window_info().height
-        this.data_offset = canvas_container.obj_main.offset()
 
-        this.set_is_activate(true)
-        canvas_container.ref_svg.append(this.obj_main)
+        let offset = canvas_container.ref_main.offset()
+        if (offset) {
+            this.data_offset = {
+                left: offset.left,
+                top: offset.top,
+                height: canvas_container.get_window_info().height,
+                width: canvas_container.get_window_info().width,
+            }
+        } else {
+            this.data_offset = {
+                left: 0, top: 0, height: 0, width: 0
+            }
+        }
+
+        this.set_is_activate(false)
+        canvas_container.ref_svg.append(this.obj_svg)
     }
 
     new_svg(qualified_name: string): JQuery<SVGElement> {
@@ -43,13 +52,11 @@ class BasicPart {
         return $(obj)
     }
 
-    // region 数据操作
     get_is_modified(): boolean {
         return this.data_modified
     }
 
     set_is_modified(b: boolean) {
-        console.log("part modified", b)
         this.data_modified = b
     }
 
@@ -73,7 +80,6 @@ class BasicPart {
         })
     }
 
-
     get_point_data() {
         return this.data_points
     }
@@ -96,13 +102,12 @@ class BasicPart {
     }
 
     set resolution(r: PointData) {
-        this.data_width = r.w
-        this.data_height = r.h
+        this.data_offset.width = r.w
+        this.data_offset.height = r.h
         this.onResize()
     }
 
     activate() {
-        console.log(`basic part activate: ${this.id}`)
         if (!this.get_is_activate()) {
             this.set_is_activate(true)
             this.points_show()
@@ -114,36 +119,44 @@ class BasicPart {
      * @returns {boolean} obj是否存在
      */
     deactivate() {
-        console.log(`basic part deactivate: ${this.id}`)
+        // console.warn(`basic part deactivate: ${this.id}`)
         this.set_is_activate(false)
         this.points_hide()
+        this.redraw()
         // console.log("basic part data:", this.data)
         if (this.data_points.size > 0) {
             this.get_is_modified() ? this.confirm() : this.cancel()
+            // 激活按钮
+            this.obj_canvas_container.ref_main_panel.obj_canvas_panel.set_button(this.id, "on", undefined)
             return true
         } else {
-            this.destroy()
+            this.remove()
+            // 关闭按钮
+            this.obj_canvas_container.ref_main_panel.obj_canvas_panel.set_button(this.id, "off", undefined)
             return false
         }
     }
 
     points_show() {
+        console.groupCollapsed("show_part_points:", this.id)
         this.data_points.forEach((d, id: string) => {
-            this.data_points_ref.set(id, this.pointCreate(d, id))
+            console.log("show point", id)
+            this.data_points_ref.set(id, this.point_create(d, id))
         })
+        console.groupEnd()
     }
 
     points_hide() {
-        if (this.get_is_modified()) {
-            this.confirm()
-        }
-        // console.log("hide points")
-        if (this.data_points_ref.size > 0) {
-            this.data_points_ref.forEach((obj, id) => {
-                obj.remove()
-                this.data_points_ref.delete(id)
-            })
-        }
+        // if (this.get_is_modified()) {
+        //     this.confirm()
+        // }
+        console.groupCollapsed("hide_part_points:", this.id)
+        this.data_points_ref.forEach((obj, id) => {
+            console.log("remove point", id)
+            obj.remove()
+            this.data_points_ref.delete(id)
+        })
+        console.groupEnd()
     }
 
     points_get_all() {
@@ -151,11 +164,11 @@ class BasicPart {
     }
 
     moveTop() {
-        this.obj_main.parent().children().last().after(this.obj_main)
+        this.obj_svg.parent().children().last().after(this.obj_svg)
     }
 
     moveBottom() {
-        this.obj_main.parent().children().first().before(this.obj_main)
+        this.obj_svg.parent().children().first().before(this.obj_svg)
     }
 
     confirm() {
@@ -165,17 +178,12 @@ class BasicPart {
             this.get_point_data().forEach((point_data, index) => {
                 p_data.set(index, [point_data.w, point_data.h])
             })
-            this.ref_canvas_container.update_part(this.id, {cPoints: p_data})
+            this.obj_canvas_container.update_part(this.id, {cPoints: p_data})
         }
     }
 
     cancel() {
-        console.log(`basic part cancel:`, this.id)
-    }
-
-    destroy() {
-        console.log("basic part destroy:", this.id)
-        this.obj_main.remove()
+        this.redraw()
     }
 
     redraw() {
@@ -184,16 +192,16 @@ class BasicPart {
 
     remove() {
         this.points_hide()
-        this.obj_main.remove()
+        this.obj_svg.remove()
     }
 
     /**
      * 创建锚点
      * @param p 坐标数据 {w:p.w,h:p.h}
      * @param id ID
-     * @returns {*} object
+     * @returns {*} SVG
      */
-    pointCreate(p: PointData, id: string | null) {
+    point_create(p: PointData, id: string | null): JQuery<SVGElement> {
         while (!id || this.data_points_ref.has(id)) {
             id = `${this.id}_${this.data_point_count}`
             this.data_point_count++
@@ -202,20 +210,20 @@ class BasicPart {
         p = this.WHtoXY(p)
         let obj = this.new_svg("circle").attr("cx", `${p.x}`).attr("cy", `${p.y}`).attr("id", id)
             .attr("r", 3.2).attr("fill", "red").attr("stroke", "black").attr("stroke-width", 0.5)
-            .on("hover", this.onHover)
-            .on("click", this.pointOnLClick.bind(this))
-            .on("contextmenu", this.pointOnRClick.bind(this))
-        this.obj_main.parent().append(obj);
+            .on("mouseenter", this.switch_color).on("mouseleave", this.switch_color)
+            .on("click",(e)=> {
+                this.point_on_l_click(e)
+            }).on("contextmenu", (e)=> {
+                this.point_on_r_click(e)
+            })
+        this.obj_svg.parent().append(obj);
         this.data_points.set(id, {w: p.w, h: p.h, x: 0, y: 0})
         this.data_undo = [];
         return obj
     }
 
-    pointMove(p: PointData, id: string | null) {
+    point_move(p: PointData, id: string) {
         this.set_is_modified(true)
-        if (!id) {
-            id = this.pointPick
-        }
         // console.log(`point move: ${id} ->`, p)
         let obj = this.data_points_ref.get(id)
         if (obj) {
@@ -258,12 +266,12 @@ class BasicPart {
         }
 
         let p = this.WHtoXY(pdata)
-        this.obj_main.parent().off("mousemove")
+        this.obj_svg.parent().off("mousemove")
         let obj = this.data_points_ref.get(id)
         if (obj) {
             obj.attr("cx", p.x).attr("cy", p.y)
                 .off("mousemove").off("mouseleave")
-                .hover(this.onHover);
+                .on("mouseenter", this.switch_color).on("mouseleave",this.switch_color);
             this.pointPick = ""
         }
     }
@@ -308,11 +316,24 @@ class BasicPart {
     }
 
     onResize() {
-        this.data_offset = this.ref_canvas_container.obj_main.offset()
+        let obj = this.obj_canvas_container
+        let offset = obj.ref_main.offset()
+        if (offset) {
+            this.data_offset = {
+                left: offset.left,
+                top: offset.top,
+                height: obj.get_window_info().height,
+                width: obj.get_window_info().width,
+            }
+        } else {
+            this.data_offset = {
+                left: 0, top: 0, height: 0, width: 0
+            }
+        }
     }
 
-    onHover() {
-        let obj = $(this)
+    switch_color(e:JQuery.MouseEnterEvent|JQuery.MouseLeaveEvent) {
+        let obj = $(e.target)
         let cs = obj.attr("fill")
         let cf = obj.attr("stroke")
         if (cs !== undefined && cf != undefined) {
@@ -320,14 +341,16 @@ class BasicPart {
         }
     }
 
-    pointOnLClick(e: any) {
+
+
+    point_on_l_click(e: JQuery.ClickEvent) {
         e.stopPropagation();
         const obj = $(e.target);
         if (this.pointPick) {
             // 已选择点，放下
             obj.off("mousemove").off("mouseleave")
-                .hover(this.onHover);
-            this.obj_main.parent().off("mousemove")
+                .on("mouseenter", this.switch_color).on("mouseleave", this.switch_color)
+            this.obj_svg.parent().off("mousemove")
 
             this.pointSave(this.getPosition(e), null)
             this.pointPick = ""
@@ -335,32 +358,33 @@ class BasicPart {
 
         } else {
             // 未选择点，拾起
-            this.pointPick = e.target.id
+            let id = e.target.id
+            this.pointPick = id
             obj.off("mouseenter").off("mouseleave")
                 .on("mousemove", (e) => {
-                    this.pointMove(this.getPosition(e), null)
+                    this.point_move(this.getPosition(e), id)
                 })
-            this.obj_main.parent().on("mousemove", (e: any) => {
-                this.pointMove(this.getPosition(e), null)
+            this.obj_svg.parent().on("mousemove", (e) => {
+                this.point_move(this.getPosition(e), id)
             })
         }
     }
 
-    pointOnRClick(e: any) {
+    point_on_r_click(e: JQuery.ContextMenuEvent) {
         e.stopPropagation();
         e.preventDefault();
         this.pointCancel(e.target.id)
     }
 
     WHtoXY(p: PointData): PointData {
-        p.x = parseFloat((p.w * this.data_width / 100).toFixed(3))
-        p.y = parseFloat((p.h * this.data_height / 100).toFixed(3))
+        p.x = parseFloat((p.w * this.data_offset.width / 100).toFixed(3))
+        p.y = parseFloat((p.h * this.data_offset.height / 100).toFixed(3))
         return p
     }
 
     XYtoWH(p: PointData): PointData {
-        p.w = parseFloat((p.x * 100 / this.data_width).toFixed(3))
-        p.h = parseFloat((p.y * 100 / this.data_height).toFixed(3))
+        p.w = parseFloat((p.x * 100 / this.data_offset.width).toFixed(3))
+        p.h = parseFloat((p.y * 100 / this.data_offset.height).toFixed(3))
         return p
     }
 
@@ -384,11 +408,13 @@ export class PolyPart extends BasicPart {
         // console.log(`new polygon: ${id} @`, container)
         super(id, container, color, "polygon");
 
-        this.obj_main.attr("opacity", 0.5)
+        this.obj_svg.attr("opacity", 0.5)
             .attr("stroke-width", 1).attr("stroke", "black")
-            .hover(this.onHover)
-            .click(this.moveBottom.bind(this))
-            .contextmenu((e) => {
+            .on("mouseenter", this.switch_color).on("mouseleave",this.switch_color)
+            .on("click", () => {
+                this.moveBottom()
+            })
+            .on("contextmenu", (e) => {
                 e.stopPropagation()
                 e.preventDefault()
                 this.get_is_activate() ? this.deactivate() : this.activate()
@@ -397,6 +423,6 @@ export class PolyPart extends BasicPart {
 
     redraw() {
         super.redraw();
-        this.obj_main.attr("points", this.get_point_string())
+        this.obj_svg.attr("points", this.get_point_string())
     }
 }

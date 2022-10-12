@@ -1,14 +1,14 @@
 import {GetData} from "../common/common";
-import {Class_main} from "./class_main";
+import {class_main} from "./class_main";
 
-export class Class_menu {
+export class class_menu {
     root
     menu_activated: JQuery | undefined
     api_root: string = "/api/v1"
-    ref_main: Class_main
+    ref_main: class_main
 
-    constructor(api_root: string, ref_main: Class_main) {
-        this.root = $(".mt-2 .nav");
+    constructor(api_root: string, ref_main: class_main) {
+        this.root = $("#menu-left nav ul");
         this.ref_main = ref_main
         if (api_root != "") {
             this.api_root = api_root

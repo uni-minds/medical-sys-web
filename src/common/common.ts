@@ -73,10 +73,12 @@ export function NumberPad(num:number, n:number):string {
     return ret;
 }
 
-export function OpenLabelTool(ui_root:string,media_type:string,media_index:string, submit_level:string, label_uuid:string) {
-    let targetURL = `${ui_root}/labeltool/${media_type}/${media_index}/${submit_level}`;
+export function OpenLabelTool(ui_root:string,media_type:string,media_index:string, submit_level:string, label_uuid:string|undefined) {
+    let targetURL = `${ui_root}/labelsys/${media_type}/${media_index}/${submit_level}`;
     let params = new Map
-    params.set("label_uuid", label_uuid)
+    if (label_uuid) {
+        params.set("label_uuid", label_uuid)
+    }
     window.open(BuildURL(targetURL, params), "", 'fullscreen, toolbar=no, menubar=no, scrollbars=no, resizable=no,location=no, status=no')
 }
 
@@ -140,3 +142,21 @@ function isDate (val: any): val is Date {
 function isObject (val: any): val is Object {
     return val !== null && typeof val === 'object'
 }
+
+export function SideBarControl(action:string) {
+    switch (action) {
+        case "open":
+            $(document.body).addClass("sidebar-mini").removeClass("sidebar-collapse")
+            break
+
+        case "close":
+            $(document.body).addClass("sidebar-mini sidebar-collapse")
+            break
+
+        case "hide":
+            $(document.body).removeClass("sidebar-mini").addClass("sidebar-collapse")
+            break
+    }
+}
+
+

@@ -3,11 +3,7 @@ import $ from "jquery"
 
 export class UI {
     ref_popup_msgbox
-    ref_copyright
-    ref_info_log
     ref_backdrop
-
-    ref_main: JQuery
 
     data: {}
     flag_show_popup_msgbox = true
@@ -21,33 +17,6 @@ export class UI {
                 <div class="modal-body"><p></p></div>            </div></div></div>`)
         $("#ui-message-window").append(this.ref_popup_msgbox)
 
-
-        this.ref_main = $('<div id="ui-constructor" class="row" />').height(48)
-        $("#main-footer").css("padding", 0).append(this.ref_main)
-
-        // this.createInfoPanel()
-        let obj1 = $('<div class="col-md-10 text-center align-self-center" />').css("padding", 0)
-        let info = $('<div/>')
-        obj1.append(info)
-
-        this.ref_info_log = info
-        this.ref_main.append(obj1)
-
-        // this.createCopyright()
-        let obj2 = $('<div class="col-md-2 text-center align-self-center bg-white" />').css("padding", 0)
-        let t1 = `core-sys 3.0<br/>(c) 2018 - 2022`
-        let t2 = `Liuxy [BUAA]<br/>Uni-Minds.com`
-        let t = $('<div />').html(t1).hover(() => {
-            this.ref_copyright.html(t2)
-        }, () => {
-            this.ref_copyright.html(t1)
-        })
-        obj2.append(t)
-
-        this.ref_copyright = t
-        this.ref_main.append(obj2)
-
-        // create backdrop
         this.ref_backdrop = $('<div class="modal-backdrop fade"></div>')
 
         this.message("系统正在初始化", false)
@@ -55,12 +24,10 @@ export class UI {
 
 
     message(msg: string, warn: boolean) {
-        this.ref_info_log.text(msg)
-        // console.info("UI MSG:", msg)
         if (warn) {
-            this.ref_main.addClass("bg-gradient-red").removeClass("bg-gradient-yellow")
+            console.warn("MSG :", msg)
         } else {
-            this.ref_main.addClass("bg-gradient-yellow").removeClass("bg-gradient-red")
+            console.info("WARN:", msg)
         }
     }
 
@@ -77,7 +44,6 @@ export class UI {
     }
 
     set popupContent(msg: string) {
-        // console.info("UI POP:", message)
         const ref = this.ref_popup_msgbox
         if (msg) {
             if (!this.flag_show_popup_msgbox) {

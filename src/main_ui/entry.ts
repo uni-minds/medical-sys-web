@@ -1,12 +1,12 @@
 import {GetData} from "../common/common";
-import {Class_menu} from "./class_menu";
-import {Class_main} from "./class_main";
+import {class_menu} from "./class_menu";
+import {class_main} from "./class_main";
 
-// const api_root = "/api/v1"
-// const ui_root = "/ui"
+const api_root = "/api/v1"
+const ui_root = "/ui"
 //
-const api_root = "http://localhost/api/v1"
-const ui_root = "http://localhost/ui"
+// const api_root = "http://localhost/api/v1"
+// const ui_root = "http://localhost/ui"
 
 class Copyright {
     constructor() {
@@ -42,8 +42,8 @@ function sidebar(action:string) {
     }
 }
 
-let main = new Class_main("#main-content",api_root,ui_root)
-let menu = new Class_menu(api_root,main)
+let main = new class_main("#main-content",api_root,ui_root)
+let menu = new class_menu(api_root,main)
 let cr = new Copyright()
 cr.init().then(()=> {
     menu.load_username()

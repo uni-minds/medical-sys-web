@@ -2,6 +2,7 @@
  * 定时器父类
  * @param: Class
  */
+import {PostData} from "../common/common";
 
 export class Timer {
     func: () => void
@@ -51,9 +52,14 @@ export class MediaLockerObj extends Timer {
     constructor(lockInterval: number,apiLock:string) {
         super(() => {
             if (this.lockInterval > 0) {
-                $.post(this.urlLock).done(resp => {
+                PostData(this.urlLock, null).then((data) => {
+                    if (data == undefined) {
+                        return undefined
+                    }
+
+                    let resp = data as ServerResponse
                     if (resp.code !== 200) {
-                        console.warn("resp.msg")
+                        console.warn(resp.msg)
                     }
                 })
             }

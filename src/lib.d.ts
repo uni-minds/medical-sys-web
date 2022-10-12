@@ -85,7 +85,7 @@ declare interface UrlInfo {
     path_base: string
     path_class: string
     path_indexer: string
-    params: any
+    params: Map<string, string>
 }
 
 declare interface labelsys_struct_data {

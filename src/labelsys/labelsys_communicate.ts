@@ -1,13 +1,16 @@
 
 export function import_usr_json(str:string):LabelTotalData {
-    let data = JSON.parse(str) as LabelTotalData
-    let frames: LabelPage[] = []
-    data.frames.forEach((frame: any, index) => {
-        if (frame) {
-            frames[index] = usr_format_page(frame)
-        }
-    })
-    data.frames = frames
+    let data: LabelTotalData = {c: 0, q: 0, frames: []}
+    if (str != "") {
+        data = JSON.parse(str) as LabelTotalData
+        let frames: LabelPage[] = []
+        data.frames.forEach((frame: any, index) => {
+            if (frame) {
+                frames[index] = usr_format_page(frame)
+            }
+        })
+        data.frames = frames
+    }
     return data
 }
 

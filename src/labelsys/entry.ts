@@ -1,25 +1,15 @@
-import "jquery"
-// import $ from "jquery"
-import "bootstrap"
-import "admin-lte"
 import * as common from "../common/common";
 import * as myTimer from "./labelsys_timer";
+import toastr = require("toastr");
 import {UI} from "./labelsys_ui";
 import {LabelData} from "./labelsys_data";
-import {BasicContainer} from "./labelsys_container";
+import {CanvasContainer} from "./labelsys_container";
 import {VideoContainer} from "./labelsys_container";
-import {PolyPart} from "./labelsys_parts";
 import {MediaContainer} from "./labelsys_container";
-import {BasicPanel} from "./labelsys_panel";
+import {BasicPanel, SystemPanel} from "./labelsys_panel";
 import {CanvasPanel} from "./labelsys_panel";
-import {ButtonGroup} from "./labelsys_buttons";
-import {Button} from "./labelsys_buttons"
-import $ from "jquery";
 
-const XMLNS = "http://www.w3.org/2000/svg";
-
-// const CURRENT_PAGE_URL = "http://localhost/ui/labeltool/stream/d2/author?crf=4ap"
-// const url_api_host = `http://localhost/api/v1`
+toastr.options={"closeButton":true,"timeOut":1000,"tapToDismiss":true}
 
 const CURRENT_PAGE_URL = document.URL
 const api_root = '/api/v1'
@@ -28,38 +18,37 @@ let MEDIA_SCALE = 0
 let MEDIA_LOCK_INTERVAL = 0
 const MUST_FULL_BUFFERED = false
 
-
-let ref_main_panel: any;
-let media_lock_timer:any;
-
-
-let USR_DATA_STORAGE:LabelData
-let USR_MEDIA_UUID = ""
-let USR_API_BASE =""
-let USR_SUBMIT_LEVEL=""
+let ref_main_panel: MainPanel;
+let media_lock_timer:myTimer.MediaLockerObj;
 
 
 /**
  * 主面板，功能主体
  */
-export class MainPanel extends BasicPanel {
-    ref_canvas_panel: CanvasPanel
-    ref_system_panel: SystemPanel
-    ref_media_container: MediaContainer
-    ref_video_container: VideoContainer
-    ref_canvas_container: CanvasContainer
+export class MainPanel {
+    ref_main: JQuery
+
+    obj_canvas_panel: CanvasPanel
+    obj_system_panel: SystemPanel
+    obj_media_container: MediaContainer
+    obj_video_container: VideoContainer
+    obj_canvas_container: CanvasContainer
+
+    obj_ui: UI
+
     DEF_MODE_INPUT = "i"
     DEF_MODE_CONTROL = "c"
-    user_mode = this.DEF_MODE_CONTROL
 
-    ref_btn_play: JQuery | null = null;
-    ref_btn_stop: JQuery | null = null
-    ref_btn_prev: JQuery | null = null
-    ref_btn_next: JQuery | null = null
-    ref_btn_next_label: JQuery | null = null
-    ref_btn_prev_label: JQuery | null = null
-    ref_btn_loop: JQuery | null = null
-    ref_video_playtime: JQuery | null = null
+    user_mode
+
+    ref_btn_play: JQuery | undefined;
+    ref_btn_stop: JQuery | undefined;
+    ref_btn_prev: JQuery | undefined;
+    ref_btn_next: JQuery | undefined;
+    ref_btn_next_label: JQuery | undefined;
+    ref_btn_prev_label: JQuery | undefined;
+    ref_btn_loop: JQuery | undefined;
+    ref_video_playtime: JQuery | undefined;
 
     ref_bg: any
     ref_pg_play: any
@@ -71,48 +60,51 @@ export class MainPanel extends BasicPanel {
     data_select: Map<string, any>
     flag_video_mode: boolean
 
-
     timer_metadata: any
     timer_osd_update: myTimer.Timer | undefined
     timer_buffer: any
 
-    constructor(parent: JQuery, media_info: MediaInfo, media_url: string,label_data:LabelData) {
-        super(parent, "main_panel",label_data, new UI())
+    data_usr_label: LabelData
+
+    constructor(ref_main: JQuery, media_info: MediaInfo, label_data: LabelData, api_root: string) {
+        this.ref_main = ref_main
+        this.obj_ui = new UI()
+        this.data_usr_label = label_data
         this.data_format_duration = common.TimeFormat(media_info.duration);
         this.data_select = new Map;
         this.flag_video_mode = (media_info.frames > 0);
         this.data_media_info = media_info
 
-        this.obj_main.height("100%").width("100%")
+        this.ref_main.height("100%").width("100%")
         this.initResizeListeners()
         this.initKeyPressListeners()
 
         this.user_mode = this.DEF_MODE_CONTROL
 
-        this.ref_canvas_panel = new CanvasPanel($("#creator"), "panel-canvas", this.usr_label_data, this.ref_ui ,this )
-        this.ref_system_panel = new SystemPanel($("#system",), "panel-system", this.usr_label_data, this.ref_ui)
+        this.obj_canvas_panel = new CanvasPanel($("#menu-left nav ul"), this, this.data_usr_label, this.obj_ui)
+        this.obj_system_panel = new SystemPanel($("#menu-system nav ul"), this, this.data_usr_label, this.obj_ui, api_root)
 
-        this.ref_media_container = new MediaContainer(this, "container-media", "calc(100% - 70px)")
-        this.ref_video_container = new VideoContainer(this.ref_media_container, "container-video", media_url, media_info, false, this.on_play)
-        this.ref_canvas_container = new CanvasContainer(this.ref_media_container, "container-canvas", this, this.usr_label_data)
+        let media_container = new MediaContainer(this.ref_main, "container-media", "calc(100% - 70px)")
+        this.obj_video_container = new VideoContainer(media_container.ref_main, "container-video", media_info, false, this.on_play)
+        this.obj_canvas_container = new CanvasContainer(media_container.ref_main, "container-canvas", this, this.data_usr_label)
+        this.obj_media_container = media_container
 
-        this.ref_canvas_panel.set_canvas_ref(this.ref_canvas_container)
+        this.obj_canvas_panel.set_canvas_ref(this.obj_canvas_container)
 
-
-        this.ref_ui.bgFrozen(true)
+        this.obj_ui.bgFrozen(true)
 
         this.timer_metadata = new myTimer.Timer(() => {
-            if (this.ref_video_container.get_flag_metaloaded()) {
+            if (this.obj_video_container.get_flag_metaloaded()) {
                 // console.info("Timer.metaload stop")
                 this.timer_metadata.stop()
-                this.onMetaLoaded()
-                this.ref_ui.popupContent = "数据预载结束"
-                this.ref_ui.message("数据预载结束", false)
+                this.on_metaloaded()
+                toastr.info("媒体数据预载结束,允许标注")
+                console.log("metadata_load_finish")
             } else {
-                this.ref_ui.message("数据载入未完成...", true)
+                console.debug("媒体载入未完成...")
             }
         })
-        this.timer_metadata.start(100)
+        this.timer_metadata.start(300)
     }
 
     on_play(frame: number) {
@@ -138,7 +130,7 @@ export class MainPanel extends BasicPanel {
                 } else if (mutation.type === 'attributes') {
                     // console.log('The ' + mutation.attributeName + ' attribute was modified.');
                     if (mutation.attributeName === "style") {
-                        this.onResize()
+                        this.on_resize()
                     }
                 }
             }
@@ -147,7 +139,7 @@ export class MainPanel extends BasicPanel {
         observer.observe($(".content-wrapper")[0], {attributes: true, childList: false, subtree: false});
 
         window.addEventListener("resize", (e) => {
-            this.onResize()
+            this.on_resize()
         })
     }
 
@@ -167,17 +159,17 @@ export class MainPanel extends BasicPanel {
         })
     }
 
-
+    /*
     set_value(group: string, value: string, crf: crf_meta) {
         // console.log("button set value", group, value, crf)
         switch (crf.domain) {
             case "global":
-                this.usr_label_data.set_global(group, parseInt(crf.value))
+                this.data_usr_label.set_global(group, parseInt(crf.value))
                 break
             case "frame":
                 switch (group) {
                     case "t":
-                        this.ref_canvas_container.set_page_time_label(crf.id, value, this.ref_video_container.get_current_time())
+                        this.obj_canvas_container.set_page_time_label(crf.id, value, this.obj_video_container.get_current_time())
                         break
                     default:
                 }
@@ -206,61 +198,81 @@ export class MainPanel extends BasicPanel {
         this.data_select.delete(group)
     }
 
+
     get_part(id: string) {
-        return this.ref_canvas_container.get_part(id)
+        return this.obj_canvas_container.get_part(id)
     }
 
     has_part(id: string) {
-        return this.ref_canvas_container.has_part(id)
+        return this.obj_canvas_container.has_part(id)
     }
+*/
 
     del_part(id: string) {
         console.log('remove part', id)
         switch (id) {
             case "all":
-                if (this.ref_ui.confirm(`确认删除本帧全部标注结构？`)) {
-                    this.ref_canvas_container.get_activates().forEach((isAct, id) => {
-                        this.ref_canvas_container.del_part(id)
-                        this.ref_canvas_panel.set_button(id, "off", null)
+                if (this.obj_ui.confirm(`确认删除本帧全部标注结构？`)) {
+                    this.obj_canvas_container.get_activates().forEach((isAct, id) => {
+                        this.obj_canvas_container.del_part(id)
+                        this.set_button_deactivate(id)
 
                     })
                 }
                 break
             case "activate":
-                this.ref_canvas_container.get_activates().forEach((isAct, id) => {
-                    if (isAct && this.ref_ui.confirm(`确认删除标注结构：${id}？`)) {
-                        this.ref_canvas_container.del_part(id)
-                        this.ref_canvas_panel.set_button(id, "off", null)
+                this.obj_canvas_container.get_activates().forEach((isAct, id) => {
+                    if (isAct && this.obj_ui.confirm(`确认删除标注结构：${id}？`)) {
+                        this.obj_canvas_container.del_part(id)
+                        this.set_button_deactivate(id)
                     }
                 })
                 break
             default:
-                if (this.ref_canvas_container.has_part(id)) {
-                    this.ref_canvas_container.del_part(id)
-                    this.ref_canvas_panel.set_button(id, "off", null)
+                if (this.obj_canvas_container.has_part(id)) {
+                    this.obj_canvas_container.del_part(id)
+                    this.set_button_deactivate(id)
                 }
         }
     }
 
+    set_button_activate(id: string) {
+        this.obj_canvas_panel.set_button(id, "on", undefined)
+    }
+
+    set_button_deactivate(id: string) {
+        this.obj_canvas_panel.set_button(id, "off", undefined)
+    }
+
+    set_button_hold(id: string) {
+        this.obj_canvas_panel.set_button(id, "hold", undefined)
+    }
+
+    set_button_desc(id: string, isActivate: boolean, desc: string) {
+        this.obj_canvas_panel.set_button(id, isActivate ? "on" : "off", desc)
+    }
+
     get_current_play_info() {
-        return this.ref_video_container.get_current_all()
+        return this.obj_video_container.get_current_all()
     }
-
-    onGlobalFinishDownload() {
-        let q = this.usr_label_data.get_global("q")
-        if (q) {
-            let id = `FQ${q}`
-            this.ref_canvas_panel.set_button(id, "on", null)
-        }
-        this.skipToFrame(0)
-    }
-
 
     on_crf_ready() {
-        this.ref_canvas_panel.load_crf()
+        let crf_groups = this.data_usr_label.get_crf_groups()
+        this.obj_canvas_panel.load_crf(crf_groups)
     }
 
-    onMouseScroll(e: any) {
+    on_usr_ready() {
+        let q = this.data_usr_label.get_global("q")
+        console.log("配置质量标签 q=", q)
+
+        if (q) {
+            let id = `FQ${q}`
+            this.obj_canvas_panel.set_button(id, "on", undefined)
+        }
+        this.update({frame:0,time:0,progress:0})
+    }
+
+    on_mouse_scroll(e: any) {
         let delta = (e.originalEvent.wheelDelta && (e.originalEvent.wheelDelta > 0 ? 1 : -1)) ||  // chrome & ie
             (e.originalEvent.detail && (e.originalEvent.detail > 0 ? -1 : 1));// firefox
         if (delta > 0) {
@@ -270,37 +282,34 @@ export class MainPanel extends BasicPanel {
         }
     }
 
-    onMetaLoaded() {
-        // console.groupCollapsed("main panel on metaloaded")
+    on_metaloaded() {
         // console.log("create progress bar")
-        this.progressBarCreate()
+        this.pg_bar_create()
         // console.log("create progress tag")
-        this.progressTagCreate()
+        this.pg_tag_create()
         // console.log("create control bar")
-        this.controlBarCreate()
+        this.control_bar_create()
 
         // console.log("resize window")
-        this.onResize()
+        this.on_resize()
 
-        $(this.obj_main).on("mousewheel DOMMouseScroll", this.onMouseScroll)
+        $(this.ref_main).on("mousewheel DOMMouseScroll", this.on_mouse_scroll)
         // console.info("Timer.buffer start")
         this.timer_buffer = new myTimer.Timer(() => {
-            if (!MUST_FULL_BUFFERED || this.data_media_info.duration === 0 || this.progressBufferMonitor()) {
+            if (!MUST_FULL_BUFFERED || this.data_media_info.duration === 0 || this.pg_buffer_monitor()) {
                 // console.info("Timer.buffer stop")
                 this.timer_buffer.stop()
-                this.ref_ui.message("完成视频载入", false)
-                this.ref_ui.popupContent = ""
-                this.ref_ui.bgUnfrozen()
+                toastr.info("完成视频载入")
+                this.obj_ui.bgUnfrozen()
             }
         })
         this.timer_buffer.start(100)
-        // console.groupEnd()
     }
 
-    onResize() {
-        let d = this.ref_video_container.get_window_info()
+    on_resize() {
+        let d = this.obj_video_container.get_window_info()
 
-        let mcs = this.ref_media_container.get_window_info()
+        let mcs = this.obj_media_container.get_window_info()
         let containerH = mcs.height
         let containerW = mcs.width
         let containerScale = containerW / containerH
@@ -316,15 +325,15 @@ export class MainPanel extends BasicPanel {
             d.left = (containerW - d.width) / 2
             d.top = 0
         }
-        this.ref_video_container.set_window_info(d)
-        this.ref_canvas_container.set_window_info(d)
+        this.obj_video_container.set_window_info(d)
+        this.obj_canvas_container.set_window_info(d)
     }
 
     onKeyDown(code: number) {
         switch (code) {
             // ESC
             case 27:
-                this.ref_canvas_container.page_load(null)
+                this.obj_canvas_container.page_load(null)
                 break;
             // P
             case 80:
@@ -335,38 +344,38 @@ export class MainPanel extends BasicPanel {
                 break;
             // Z
             case 90://z
-                this.ref_canvas_container.undo();
+                this.obj_canvas_container.undo();
                 break;
             // X, U
             case 88:
             case 85:
-                this.ref_canvas_container.redo();
+                this.obj_canvas_container.redo();
                 break;
             // Del, D, Backspace
             case 46:
             case 68:
             case 8:
-                ref_main_panel.delPart("activate")
+                ref_main_panel.del_part("activate")
                 break;
             // Q
             case 81:
-                ref_main_panel.delPart("all");
+                ref_main_panel.del_part("all");
                 break;
             // H
             case 72:
-                if (this.ref_canvas_container.get_canvas_hidden()) {
-                    this.ref_canvas_container.show_all_parts()
+                if (this.obj_canvas_container.get_canvas_hidden()) {
+                    this.obj_canvas_container.show_all_parts()
                 } else {
-                    this.ref_canvas_container.hide_all_parts()
+                    this.obj_canvas_container.hide_all_parts()
                 }
                 break;
             // Home
             case 36:
-                this.skipToFrame(0)
+                this.skip_to_frame(0)
                 break;
             // End
             case 35:
-                this.skipToFrame(-1)
+                this.skip_to_frame(-1)
                 break;
             // left
             case 37:
@@ -390,24 +399,21 @@ export class MainPanel extends BasicPanel {
     }
 
     play() {
-        // console.debug("btn play click")
         this.currentPageSave()
         let obj_play = this.ref_btn_play
-        if (obj_play) {
-            if (this.ref_video_container.play()) {
-                obj_play.html('<i class="fas fa-pause-circle"></i>')
-                this.ref_canvas_container.page_new()
-                this.osd_auto_update_start()
 
-            } else {
-                obj_play.html('<i class="fas fa-play-circle"></i>')
-                // console.log("current frame",this.vc.currentTime,this.vc.currentFrame)
-                this.update(this.ref_video_container.get_current_all())
-                this.osdAutoUpdateStop()
+        if (this.obj_video_container.play()) {
+            obj_play?.html('<i class="fas fa-pause-circle"></i>')
+            this.obj_canvas_container.page_new()
+            this.osd_auto_update_start()
 
-            }
+        } else {
+            obj_play?.html('<i class="fas fa-play-circle"></i>')
+            // console.log("current frame",this.vc.currentTime,this.vc.currentFrame)
+            this.update(this.obj_video_container.get_current_all())
+            this.osd_auto_update_stop()
+
         }
-
     }
 
     stop() {
@@ -415,56 +421,57 @@ export class MainPanel extends BasicPanel {
         if (obj_play) {
             obj_play.html('<i class="fas fa-play-circle"></i>')
         }
-        this.ref_video_container.stop()
-        this.osdAutoUpdateStop();
+        this.obj_video_container.stop()
+        this.osd_auto_update_stop();
         this.osd_manual_update();
     }
 
-    skipToFrame(frame: number) {
+    skip_to_frame(frame: number) {
         this.currentPageSave()
-        this.update(this.ref_video_container.jumpTo(frame))
+        this.update(this.obj_video_container.jump_to(frame))
     }
 
     prevFrame() {
         this.currentPageSave()
-        const media_current = this.ref_video_container.prev()
+        const media_current = this.obj_video_container.prev()
         this.update(media_current)
     }
 
     nextFrame() {
         this.currentPageSave()
-        this.update(this.ref_video_container.next())
+        this.update(this.obj_video_container.next())
     }
 
     update(d: MediaCurrent) {
         if (d) {
-            console.debug("main panel: frame to", d.frame)
-            this.progressPlay = d.progress
-            this.currentPageLoad(d.frame)
+            console.debug("main panel: update to", d)
+            this.set_progress_play(d.progress)
+            this.obj_canvas_container.page_load(d.frame)
+            this.obj_canvas_panel.page_load(d.frame)
         }
     }
 
     prevLabel() {
         this.currentPageSave()
-        let vc = this.ref_video_container
-        let f = this.usr_label_data.before(vc.get_current_frame())
+        let vc = this.obj_video_container
+        let f = this.data_usr_label.before_page(vc.get_current_frame())
         if (!!f) {
             vc.set_current_frame(f)
             this.update(vc.get_current_all())
         } else {
-            this.ref_ui.message("无标注信息", false)
+            this.obj_ui.message("无标注信息", false)
         }
     }
 
     nextLabel() {
         this.currentPageSave()
-        let vc = this.ref_video_container
-        let f = this.usr_label_data.after(vc.get_current_frame())
+        let vc = this.obj_video_container
+        let f = this.data_usr_label.after_page(vc.get_current_frame())
         if (!!f) {
             vc.set_current_frame(f)
             this.update(vc.get_current_all())
         } else {
-            this.ref_ui.message("无标注信息", false)
+            this.obj_ui.message("无标注信息", false)
         }
     }
 
@@ -476,10 +483,6 @@ export class MainPanel extends BasicPanel {
         // }
     }
 
-    currentPageLoad(page: number) {
-        this.ref_canvas_container.page_load(page)
-        this.ref_canvas_panel.set_current_page(page)
-    }
 
     osd_auto_update_start() {
         let t = this.timer_osd_update
@@ -491,34 +494,26 @@ export class MainPanel extends BasicPanel {
             this.timer_osd_update = t
         }
         // console.info("Timer.osd start")
-        let reflush_time = Math.floor(500 / this.data_media_info.fps)
-        if (reflush_time < 20) {
-            reflush_time = 20
+        let refresh = Math.floor(500 / this.data_media_info.fps)
+        if (refresh < 20) {
+            refresh = 20
         }
-        t.start(reflush_time)
+        t.start(refresh)
     }
 
-    osdAutoUpdateStop() {
+    osd_auto_update_stop() {
         if (this.timer_osd_update) {
             this.timer_osd_update.stop()
         }
     }
 
     osd_manual_update() {
-        // console.debug("osd upd")
-        this.ref_canvas_container.page_load(null)
-        this.progressPlay = this.ref_video_container.get_progress()
+        let info = this.get_current_play_info()
+        this.obj_canvas_container.page_load(info.frame)
+        this.set_progress_play(info.progress)
     }
 
-    controlBarUpdate() {
-        let t = common.TimeFormat(this.ref_video_container.get_current_time())
-        let obj = this.ref_video_playtime
-        if (obj) {
-            obj.text(`${t} / ${this.data_format_duration}`)
-        }
-    }
-
-    controlBarCreate() {
+    control_bar_create() {
         let videoControlCenter = $("<div class='row'/>").height(40);
         let videoPlaytime = $("<div/>").text(`0:00.000 / ${this.data_format_duration}`);
         // Left control
@@ -539,14 +534,26 @@ export class MainPanel extends BasicPanel {
         videoControlCenter.append(LA).append(MA).append(RA);
 
         if (this.flag_video_mode) {
-            btnPlay.click(this.play.bind(this))
-            btnStop.click(this.stop.bind(this))
-            btnPFra.click(this.prevFrame.bind(this))
-            btnNFra.click(this.nextFrame.bind(this))
-            btnPLab.click(this.prevLabel.bind(this))
-            btnNLab.click(this.nextLabel.bind(this))
-            btnLoop.attr("checked", "checked").click(() => {
-                this.ref_video_container.set_loop(!this.ref_video_container.get_loop())
+            btnPlay.on("click", () => {
+                this.play()
+            })
+            btnStop.on("click", () => {
+                this.stop()
+            })
+            btnPFra.on("click", () => {
+                this.prevFrame()
+            })
+            btnNFra.on("click", () => {
+                this.nextFrame()
+            })
+            btnPLab.on("click", () => {
+                this.prevLabel()
+            })
+            btnNLab.on("click", () => {
+                this.nextLabel()
+            })
+            btnLoop.attr("checked", "checked").on("click", () => {
+                this.obj_video_container.set_loop(!this.obj_video_container.get_loop())
             })
         } else {
             btnPlay.addClass("disabled")
@@ -556,10 +563,9 @@ export class MainPanel extends BasicPanel {
             btnPLab.addClass("disabled")
             btnNLab.addClass("disabled")
             btnLoop.addClass("disabled")
-
         }
 
-        this.obj_main.append(videoControlCenter);
+        this.ref_main.append(videoControlCenter);
 
         this.ref_btn_play = btnPlay
         this.ref_btn_stop = btnStop
@@ -575,17 +581,18 @@ export class MainPanel extends BasicPanel {
         this.ref_pg_buffer.css("width", `${percent}%`);
     }
 
-    set progressPlay(percent: number) {
+    set_progress_play(percent: number) {
         let progress = Math.floor(percent * 10000) / 100
         let p = `${progress}%`
         if (this.ref_pg_play_str && this.ref_pg_play) {
             this.ref_pg_play_str.text(p);//进度条文字进度
             this.ref_pg_play.css("width", p);//调整控制条长度
-            this.controlBarUpdate()
+            let t = common.TimeFormat(this.obj_video_container.get_current_time())
+            this.ref_video_playtime?.text(`${t} / ${this.data_format_duration}`)
         }
     }
 
-    progressBarCreate() {
+    pg_bar_create() {
         let bg = $("<div class='progress videoProgressBackground'/>")
         let pp = $("<div class='progress-bar bg-primary progress-bar-striped videoProgressFront'/>").css("width", 0);
         let pb = $("<div class='progress-bar bg-warning videoProgressFront'/>").css("width", 0);
@@ -597,619 +604,30 @@ export class MainPanel extends BasicPanel {
             let x = e.pageX - obj.offset().left
             let w = x / obj.width()
 
-            this.progressPlay = w
+            this.set_progress_play(w)
 
-            this.update(this.ref_video_container.set_progress(w))
+            this.update(this.obj_video_container.set_progress(w))
         })
 
-        this.obj_main.append(bg);
+        this.ref_main.append(bg);
         this.ref_bg = bg
         this.ref_pg_play = pp
         this.ref_pg_play_str = str
         this.ref_pg_buffer = pb
     }
 
-    progressTagCreate() {
+    pg_tag_create() {
         let bg = $('<div class="bg-gray"/>').height(10)
-        this.obj_main.append(bg)
+        this.ref_main.append(bg)
     }
 
-    progressBufferMonitor() {
-        let buf = this.ref_video_container.get_video_buffered_percentage();
+    pg_buffer_monitor() {
+        let buf = this.obj_video_container.get_video_buffered_percentage();
         if (buf > 0) {
-            this.ref_ui.message(`载入进度1：${buf}%`, true)
+            this.obj_ui.message(`载入进度1：${buf}%`, true)
         }
         this.set_progress_buffer(buf);
         return (buf >= 100)
-    }
-}
-
-
-/**
- * 标注容器
- */
-export class CanvasContainer extends BasicContainer {
-    DEF_MODE_DISABLE = "d"
-    DEF_MODE_CREATE = "c"
-    DEF_MODE_MODIFY = "m"
-    DEF_MODE_POINT = 'p'
-    DEF_MODE_ENABLE = "e"
-
-    current_mode = ""
-
-    flag_page_is_modified = false
-
-    ref_main_panel: MainPanel
-
-    label_storage: LabelData
-    ref_svg: any
-
-    activate_id: string = ""
-
-    data_page_current: number = 0
-    data_page_parts = new Map<string, PolyPart>()
-
-    constructor(parent: MediaContainer, id: string, main_panel: MainPanel, label_storage: LabelData) {
-        super(parent, id);
-
-        this.current_mode = this.DEF_MODE_DISABLE
-        this.ref_main_panel = main_panel
-        this.label_storage = label_storage
-
-        this.page_load(0)
-        this.obj_main.css("z-index", 2).addClass("lsWorkspaceOverlay").css("left", 0).css("top", 0)
-
-    }
-
-
-    get_page_is_modified() {
-        return this.flag_page_is_modified
-    }
-
-    set_page_is_modified(b: boolean) {
-        this.flag_page_is_modified = b
-    }
-
-    get_canvas_hidden(): boolean {
-        return this.obj_main.css("display") === "none"
-    }
-
-    get_current_page() {
-        return this.data_page_current
-    }
-
-    set_current_page(page: number) {
-        this.data_page_current = page
-    }
-
-    get_page_ids(): string[] {
-        let t = []
-        let k = this.data_page_parts.keys()
-        while (1) {
-            let d = k.next()
-            t.push(d.value)
-            if (d.done) {
-                break
-            }
-        }
-        return t
-    }
-
-    page_new() {
-        this.svg.empty()
-        this.set_page_is_modified(false)
-        this.data_page_parts = new Map
-    }
-
-    /**
-     * 加载页数据
-     * @param page 页号
-     */
-    page_load(page: number | null) {
-        // pageLoad(null)
-        if (page == null) {
-            page = this.get_current_page()
-        }
-        // console.debug("canvas count.: load page:", page)
-
-        this.page_new()
-        this.set_current_page(page)
-
-        // let page_data = this.label_storage.get_page(page)
-        // console.log("pdata", page_data)
-        // this.set_page_data(page_data)
-
-        let data = this.label_storage.get_page(page)
-        if (data) {
-            console.groupCollapsed("page draw part", data)
-
-            data.clabels.forEach((value, id) => {
-                console.info("draw part:", id, value)
-                const crf_data = this.label_storage.get_crf_data(id)
-                if (crf_data) {
-                    const color = crf_data.color
-                    let p = new PolyPart(id, this, color)
-                    p.set_point_data(value.cPoints)
-                    p.redraw()
-                    this.data_page_parts.set(id, p)
-                }
-            })
-            console.groupEnd()
-        }
-    }
-
-    page_save() {
-        // console.groupCollapsed("page save:", this.data_page_current, this.get_page_data())
-        // this.label_storage.set_page(this.get_current_page(), this.get_page_data())
-        this.label_storage.upload()
-        this.page_load(null)
-        // console.groupEnd()
-    }
-
-    set_page_time_label(id: string, describe: string, time: number) {
-        // console.warn("page set time", id, describe, time)
-        const page = this.get_current_page()
-        const stor = this.label_storage
-        let data = stor.get_page(page)
-        describe = (id == "SPEC") ? describe : id
-        if (!data) {
-            data = {cdescribe: describe, cid: id, ctime: time, clabels: new Map<string, LabelPart>(), q: 0}
-            stor.set_page(page, data)
-        } else {
-            data.cid = id
-            data.cdescribe = describe
-            data.ctime = time
-            stor.set_page(page, data)
-        }
-    }
-
-
-    get_page_time_label(): string|null {
-        const data = this.label_storage.get_page(this.get_current_page())
-        if (data) {
-            return data.cdescribe
-        } else {
-            return null
-        }
-    }
-
-    // save_part(id: string, data: any) {
-    //     console.log("page save part", id, data)
-    //     this.data_page_data.set(id, data)
-    //     this.page_save()
-    //     this.ref_main_panel.ref_canvas_panel.set_button(id, "on","")
-    //
-    //     this.page_load(this.get_current_page())
-    // }
-
-    hide_all_parts() {
-        console.log("hide all parts")
-        this.obj_main.hide()
-    }
-
-    show_all_parts() {
-        this.obj_main.show()
-    }
-
-    has_part(id: string) {
-        return this.data_page_parts.has(id)
-    }
-
-    get_part(id: string) {
-        return this.data_page_parts.get(id)
-    }
-
-    del_part(id: string) {
-        console.log("cc remove part", id)
-        let part = this.data_page_parts.get(id)
-        if (!part) {
-            return
-        }
-
-        part.deactivate()
-        part.remove()
-
-        this.data_page_parts.delete(id)
-        this.set_page_is_modified(true)
-
-        let page_data = this.label_storage.get_page(this.get_current_page())
-        if (page_data) {
-            page_data.clabels.delete(id)
-            this.label_storage.set_page(this.get_current_page(), page_data)
-        }
-    }
-
-    update_part(id:string,part_label_data:LabelPart) {
-        console.log("canvas update", id, part_label_data)
-        const page = this.get_current_page()
-        let page_data = this.label_storage.get_page(page)
-        if (page_data) {
-            page_data.clabels.set(id, part_label_data)
-            this.label_storage.set_page(page,page_data)
-        } else {
-            alert("no page 821")
-        }
-    }
-
-
-    get_activates():Map<string,boolean> {
-        let ids = new Map
-        this.data_page_parts.forEach((v, id) => {
-            if (v.get_is_activate()) {
-                ids.set(id, true)
-            } else {
-                ids.set(id, false)
-            }
-        })
-        return ids
-    }
-
-    // 重做Part
-    redo() {
-        console.warn("disable redo")
-        // switch (this.current_mode) {
-        //     case this.DEF_MODE_CREATE:
-        //         let activate_id = this.get_activate_id()
-        //         let tmp = this.data_page_parts.get(activate_id)
-        //         if (!tmp) {return}
-        //         console.log("CanvasContainer.redo()")
-        //         let flg = tmp.pointRedo()
-        //         if (!flg) {
-        //             break
-        //         }
-        //         let points = tmp.points_get_all()
-        //         let keys = points.keys()
-        //         let id = ""
-        //         while (true) {
-        //             let o = keys.next()
-        //             console.log("o = ", o)
-        //             if (o.done) {
-        //                 break
-        //             }
-        //             id = o.value
-        //         }
-        //         let p = points.get(id)
-        //         if (p) {
-        //             p = tmp.WHtoXY(p)
-        //         }
-        //
-        //         let obj = tmp.new_svg("circle").attr("cx", `${p.x}`).attr("cy", `${p.y}`).attr("id", id)
-        //             .attr("r", 3.2).attr("fill", "red").attr("stroke", "black").attr("stroke-width", 0.5)
-        //             .hover(tmp.onAttention)
-        //             .click(tmp.pointOnClick.bind(tmp))
-        //             .contextmenu(tmp.pointOnContext.bind(tmp))
-        //         tmp.mainObj.parent().append(obj);
-        //         break
-        //     default:
-        //         ui.message('仅在creat模式下允许重做,当前模式为：' + this.current_mode, true)
-        // }
-    }
-
-    // 撤销Part
-    undo() {
-        console.warn("disable undo")
-        // switch (this.current_mode) {
-        //     case this.DEF_MODE_CREATE:
-        //         console.log("CanvasContainer.undo()")
-        //         let obj = this.data_page_parts.get(this.get_activate_id())
-        //         if (obj) {
-        //             let flg = obj.pointUndo()
-        //             if (flg) {
-        //                 this.obj_main[0].firstElementChild.lastElementChild.remove()
-        //             }
-        //         }
-        //
-        //         break
-        //     default:
-        //         console.error('仅在creat模式下允许撤销,当前模式为：' + this.current_mode, true)
-        // }
-    }
-
-    // 批量清除部件
-    remove(id: string) {
-        let p = this.data_page_parts
-        switch (id) {
-            case "activate":
-                p.forEach((v, id) => {
-                    if (v.get_is_activate()) {
-                        this.del_part(id)
-                    }
-                })
-                break
-
-            case "all":
-                p.forEach((v, id) => {
-                    this.del_part(id)
-                })
-                break
-
-            default:
-                this.del_part(id)
-        }
-    }
-
-    get svg() {
-        if (!this.ref_svg) {
-            let obj = document.createElementNS(XMLNS, "svg")
-            let o = $(obj).attr("width", "100%").attr("height", "100%")
-            this.obj_main.append(o)
-            this.ref_svg = o
-        }
-        return this.ref_svg
-    }
-
-    createCommon(id:string, color:string) {
-        let obj = new PolyPart(id, this, color)
-        this.data_page_parts.set(id, obj)
-    }
-
-    do_on_l_click(e:any) {
-        switch (this.current_mode) {
-            case this.DEF_MODE_CREATE:
-                console.log("create_point for",this.get_activate_id())
-                let obj = this.data_page_parts.get(this.get_activate_id())
-                if (obj) {
-                    obj.set_is_modified(true)
-                    obj.pointCreate(this.getPosition(e), null)
-                }
-                break
-            case this.DEF_MODE_MODIFY:
-
-                break
-            default:
-                console.log("canvas is not ready")
-        }
-    }
-
-    do_on_r_click() {
-        console.log("cc right click mode:", this.current_mode, this)
-        switch (this.current_mode) {
-            case this.DEF_MODE_CREATE:
-            case this.DEF_MODE_MODIFY:
-                console.log("active:",this.get_activate_id())
-                let obj = this.data_page_parts.get(this.get_activate_id())
-                if (obj && obj.get_is_modified()) {
-                    obj.confirm()
-                } else if (obj) {
-                    obj.cancel()
-                }
-                this.current_mode = this.DEF_MODE_DISABLE
-                break
-
-            default:
-        }
-    }
-
-    onResize() {
-        this.page_load(this.get_current_page())
-    }
-
-    getPosition(e:any) {
-        let o = this.obj_main.offset()
-        let d = this.get_window_info()
-
-        let x = (e.pageX - o.left)
-        let y = (e.pageY - o.top)
-
-        let w = parseFloat((x * 100 / d.width).toFixed(3))
-        let h = parseFloat((y * 100 / d.height).toFixed(3))
-
-        return {x, y, w, h}
-    }
-
-    activate(id:string, type:string, color:string) {
-        this.canvas_enable()
-        this.set_activate_id(id)
-        if (this.data_page_parts.has(id)) {
-            let obj = this.data_page_parts.get(id)
-            if (obj) {
-                obj.activate()
-                this.current_mode = this.DEF_MODE_MODIFY
-            }
-        } else {
-            console.log("creator part:", id, type, color)
-            switch (type) {
-                case "com":
-                    this.createCommon(id, color)
-                    break
-
-                default:
-                    alert(`Unknown type: ${type}`)
-                    return
-            }
-            this.current_mode = this.DEF_MODE_CREATE
-        }
-    }
-
-    deactivate(id: string) {
-        this.set_activate_id("")
-        console.log("canvas container deactivate:", id)
-        if (this.data_page_parts.has(id)) {
-            let obj = this.data_page_parts.get(id)
-            if (obj) {
-                console.log("cc found part", obj)
-                if (!obj.deactivate()) {
-                    console.log("cc remove part", id)
-                    this.del_part(id)
-                }
-            }
-        }
-        this.canvas_disable()
-    }
-
-    set_activate_id(id: string) {
-        this.activate_id = id
-    }
-
-    get_activate_id() {
-        return this.activate_id
-    }
-
-    canvas_enable() {
-        this.canvas_disable()
-        this.obj_main.click(this.do_on_l_click.bind(this)).contextmenu(this.do_on_r_click.bind(this))
-        console.log("canvas enable")
-        this.current_mode = this.DEF_MODE_ENABLE
-    }
-
-    canvas_disable() {
-        console.log("canvas disable")
-        this.obj_main.off("click").off("contextmenu")
-        this.current_mode = this.DEF_MODE_DISABLE
-    }
-
-    hideVideo() {
-        this.obj_main.css("background-color", "white")
-    }
-}
-
-
-
-
-
-
-
-
-
-
-/**
- * 系统面板，右侧隐藏
- */
-class SystemPanel extends BasicPanel {
-    memo
-    system
-    admin
-
-    constructor(parent: JQuery, id: string, label_data: LabelData, ui: UI) {
-        super(parent, id, label_data, ui)
-        let ul = $('<ul class="nav nav-pills nav-sidebar flex-column nav-flat" data-widget="treeview" role="menu" data-accordion="false"/>')
-        let nav = $('<nav class="mt-0" />').append(ul)
-        this.ref_main_list = ul
-        this.obj_main.addClass("sidebar").append(nav)
-        // 用户备注
-        this.memo = new ButtonGroup(this, "备注内容", true, null, null, null, null, ui)
-        this.memo.addMemo(5, "输入备注信息……", USR_API_BASE + '/label/memo');
-        this.system = new SystemButtonGroup(this, "系统工具", true, ui, label_data)
-        this.admin = new AdminButtonGroup(this, "管理工具", false, ui)
-    }
-}
-
-
-/**
- * 系统按钮组
- */
-class SystemButtonGroup extends ButtonGroup {
-    constructor(parent:any, title:string, open:boolean,ui:UI,label_stor:LabelData) {
-        super(parent, title, open, null, null, null, null, ui);
-        let senddata: SendData = {media: USR_MEDIA_UUID, direction: "upload", admin: "", data: null}
-        switch (USR_SUBMIT_LEVEL) {
-            case "author":
-                let btn = new Button("usr-submit", "提交审核", 12, "#67afe5", "", 0, () => {
-                    label_stor.post_author_submit().then((resp) => {
-                        if (resp.code == 200 && resp.data == "exit") {
-                            LabelToolSystemExit
-                        } else {
-                            ui.message(resp.msg, resp.code !== 200)
-                        }
-                    })
-                }, null)
-                this.mainObj.append(btn.get_object())
-                break
-
-            case "review":
-                let btnReject = new Button("usr-reject", "驳回", 6, "#cc6666", "", 0, () => {
-                    if (ui.confirm("确认驳回？")) {
-                        label_stor.post_reviewer_reject().then((resp) => {
-                            if (resp.code === 200 && resp.data === "exit") {
-                                LabelToolSystemExit()
-                            } else {
-                                ui.message(resp.msg, resp.code !== 200)
-                            }
-                        })
-                    }
-                }, null)
-                let btnConfirm = new Button("usr-confirm", "通过", 6, "#99ffcc", "", 0, () => {
-                    label_stor.post_reviewer_confirm().then((resp) => {
-                        if (resp.code === 200 && resp.data === "exit") {
-                            LabelToolSystemExit()
-                        } else {
-                            ui.message(resp.msg, resp.code !== 200)
-                        }
-                    })
-                }, null)
-
-                this.mainObj.append(btnConfirm.get_object()).append(btnReject.get_object())
-                break
-        }
-    }
-}
-
-
-/**
- * 管理员按钮组
- */
-class AdminButtonGroup extends ButtonGroup {
-    constructor(parent:any, title:string, open:boolean,ui:UI) {
-        super(parent, title, open,null,null,null,null,ui);
-        let obj = new Button("usr-drop","清空全部标注",12, "#dc3545","",0, ()=> {
-            if (ui.confirm("警告！确认后将清空本媒体对应的全部标注数据")) {
-                ui.message("未授权操作", true)
-            }
-        },null)
-        this.mainObj.append(obj.get_object())
-
-        obj = new Button("usr-export","导出标注",  6,"","",0,()=> {
-            ui.prompt("标注内容", USR_DATA_STORAGE.get_usr_data())
-        },null)
-        this.mainObj.append(obj.get_object())
-
-        obj = new Button("usr-import","导入标注", 6,"","",0,()=> {
-            let data = ui.prompt("数据内容", USR_DATA_STORAGE.get_usr_data())
-            if (data) {
-                USR_DATA_STORAGE.set_usr_data(data)
-
-                console.log("up 2")
-                USR_DATA_STORAGE.upload()
-            } else {
-                ui.message("导入已取消", true)
-            }
-        },null)
-        this.mainObj.append(obj.get_object())
-
-        obj = new Button("usr-release","至无标注状态", 6, "", "",6,()=> {
-            let data = ui.prompt("需要管理员提权，删除后本窗口将关闭",undefined)
-            if (data) {
-                $.ajax({
-                    url: USR_API_BASE + '/label/full',
-                    type: 'DELETE',
-                    data: JSON.stringify({"admin": data}),
-                }).done(resp => {
-                    if (resp.code === 200 && resp.data === "exit") {
-                        LabelToolSystemExit()
-                    } else {
-                        ui.message(resp.msg, resp.code !== 200)
-                    }
-                })
-            }
-        },null)
-        this.mainObj.append(obj.get_object())
-
-        obj = new Button("revoke","至无审阅状态",  6, "", "",6,()=> {
-            let data = ui.prompt("调整审阅状态需要管理员提权",undefined)
-            if (data) {
-                const senddata = JSON.stringify({"admin": data})
-                // console.log("senddata", senddata)
-                // /api/v1/media/MEDIA/label/:op
-                $.post(USR_API_BASE + '/label/review?do=revoke', senddata).done(resp => {
-                    if (resp.code === 200 && resp.data === "exit") {
-                        LabelToolSystemExit()
-                    } else {
-                        ui.message(resp.msg, resp.code !== 200)
-                    }
-                })
-            }
-        },null)
-        this.mainObj.append(obj.get_object())
     }
 }
 
@@ -1220,7 +638,6 @@ class AdminButtonGroup extends ButtonGroup {
  */
 function LabelToolSystemExit() {
     window.onbeforeunload = null
-    ref_main_panel.close()
     media_lock_timer.unlock(() => {
         window.close()
     })
@@ -1232,39 +649,36 @@ const url_api_media_root = `${api_root}/labelsys/${url_info.path_class}/index/${
 const url_media_info = `${url_api_media_root}/info/full`
 
 common.GetData(url_media_info).then((resp: any) => {
+    toastr.info("初始化中……")
     let media_info = resp as ServerResponse
     if (media_info.code !== 200) {
-        console.error("媒体信息反馈异常", url_media_info)
-        console.debug("D",resp)
+        toastr.error("数据初始化异常")
+        console.error("信息：", media_info.msg, url_media_info)
     } else {
         let data = media_info.data as MediaInfo;
 
-        USR_MEDIA_UUID = url_info.path_indexer
-        USR_SUBMIT_LEVEL = url_info.path_base
-        USR_API_BASE = url_api_media_root
-
         MEDIA_SCALE = data.width / data.height
-        // console.log("mi", data, "ui", url_info)
-        // ui = new myUi.UI()
-        USR_DATA_STORAGE = new LabelData(url_api_media_root, url_info)
-        let sig_crf = USR_DATA_STORAGE.DownloadCrf()
-        USR_DATA_STORAGE.DownloadUsr()
-        ref_main_panel = new MainPanel($("#main-content"), data, "http://localhost" + data.url,USR_DATA_STORAGE);
-        media_lock_timer = new myTimer.MediaLockerObj(MEDIA_LOCK_INTERVAL, `${url_api_media_root}/lock`)
-        sig_crf.then(() => {
+
+        let label_stor = new LabelData(url_api_media_root, url_info)
+        label_stor.DownloadCrf().then(() => {
+            ref_main_panel = new MainPanel($("#main-content"), data, label_stor, url_api_media_root);
+            media_lock_timer = new myTimer.MediaLockerObj(MEDIA_LOCK_INTERVAL, `${url_api_media_root}/lock`)
             ref_main_panel.on_crf_ready()
+            label_stor.DownloadUsr().then(() => {
+                ref_main_panel.on_usr_ready()
+            })
         })
-        //
-        // window.onbeforeunload = () => {
-        //     mlocker.unlock();
-        //     return "确认关闭标注界面么？"
-        // };// 退出响应
-        document.body.oncontextmenu = () => {
+
+        // 退出响应
+        window.onbeforeunload = () => {
+            // mlocker.unlock();
+            return "确认关闭标注界面么？"
+        };
+        // 右键响应
+        $(document.body).on("contextmenu", () => {
             return false
-        }// 右键响应
+        })
         // mlocker.lock()// 媒体定时锁
         // mp.init()// 初始化界面
     }
 })
-
-

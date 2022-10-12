@@ -2,6 +2,7 @@
   "devDependencies": {
     "@types/jquery": "^3.5.14",
     "@types/jquery.validation": "^1.16.7",
+    "@types/toastr": "^2.1.40",
     "clean-webpack-plugin": "^4.0.0",
     "html-webpack-plugin": "^5.5.0",
     "jqGrid": "^5.7.0",
