@@ -4,9 +4,6 @@ import {class_main} from "./class_main";
 
 const api_root = "/api/v1"
 const ui_root = "/ui"
-//
-// const api_root = "http://localhost/api/v1"
-// const ui_root = "http://localhost/ui"
 
 class Copyright {
     constructor() {
@@ -19,26 +16,6 @@ class Copyright {
         if (resp.code == 200) {
             $(".main-footer").html(resp.data);
         }
-    }
-}
-
-
-// sidebar
-//
-// open|close|hide
-function sidebar(action:string) {
-    switch (action) {
-        case "open":
-            $(document.body).addClass("sidebar-mini").removeClass("sidebar-collapse")
-            break
-
-        case "close":
-            $(document.body).addClass("sidebar-mini sidebar-collapse")
-            break
-
-        case "hide":
-            $(document.body).removeClass("sidebar-mini").addClass("sidebar-collapse")
-            break
     }
 }
 

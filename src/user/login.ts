@@ -1,12 +1,7 @@
 require("jquery")
 require("jquery-validation")
-require("toastr")
-
+import toastr = require("toastr");
 import {PostData} from "../common/common";
-import $ from "jquery"
-import "jquery-validation"
-// @ts-ignore
-import * as toastr from "toastr/build/toastr.min.js"
 
 $.validator.setDefaults({
     submitHandler: function () {

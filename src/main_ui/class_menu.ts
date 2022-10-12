@@ -29,28 +29,34 @@ export class class_menu {
 
     async load_menu() {
         let url = `${this.api_root}/raw?action=getmenujson`
-        let resp = await GetData(url) as ServerResponse
-        if (resp.code == 200) {
-            let menu_data = resp.data as ServerMenu[];
-            menu_data.forEach((menu) => {
-                if (menu.child && menu.child.length > 0) {
-                    let parent = this.create_parent(menu.name, menu.icon);
-                    let tree = $('<ul class="nav nav-treeview"></ul>');
-                    parent.append(tree);
-                    this.root.append(parent);
+        GetData(url).then((r) => {
+            if (r == undefined) {
+                return
+            }
+            let resp = r as ServerResponse
+            if (resp.code == 200) {
+                let menu_data = resp.data as ServerMenu[];
+                console.debug("menu_data",menu_data)
+                menu_data.forEach((menu) => {
+                    if (menu.child && menu.child.length > 0) {
+                        let parent = this.create_parent(menu.name, menu.icon);
+                        let tree = $('<ul class="nav nav-treeview"></ul>');
+                        parent.append(tree);
+                        this.root.append(parent);
 
-                    let childlen = menu.child.length;
-                    for (let j = 0; j < childlen; j++) {
-                        let child = menu.child[j];
-                        let obj = this.create_child(child.id, child.name, child.icon, child.controller);
-                        tree.append(obj);
+                        let childlen = menu.child.length;
+                        for (let j = 0; j < childlen; j++) {
+                            let child = menu.child[j];
+                            let obj = this.create_child(child.id, child.name, child.icon, child.controller);
+                            tree.append(obj);
+                        }
+                    } else {
+                        let obj = this.create_child(menu.id, menu.name, menu.icon, menu.controller);
+                        this.root.append(obj);
                     }
-                } else {
-                    let obj = this.create_child(menu.id, menu.name, menu.icon, menu.controller);
-                    this.root.append(obj);
-                }
-            })
-        }
+                })
+            }
+        })
     }
 
     create_parent(name: string, icon: string): JQuery {
