@@ -1,54 +1,44 @@
-import "jquery-validation"
-import $ from "jquery"
-import Swal from "sweetalert2"
+import {PostData} from "../common/common";
+import toastr = require("toastr")
 
-const masterApi = "/api/v1/user/forget"
+const masterApi = "/api/user/forget"
 
 $.validator.setDefaults({
     submitHandler: function () {
-        alert("submit")
-
-        const Toast = Swal.mixin({
-            position: 'center',
-            showConfirmButton: false,
-            timer: 3000
-        });
-
         const userInfo = {
             realname: $('#realname').val(),
             email: $('#email').val(),
             password: ""
         };
 
-        $.ajax({
-            method: 'POST',
-            url: masterApi,
-            data: JSON.stringify(userInfo)
-        }).done((resp) => {
+        PostData(masterApi,userInfo).then((r)=>{
+            if (r == undefined) {
+                return
+            }
+
+            let resp = r as ServerResponse
             if (resp.code === 200) {
-                // @ts-ignore
-                userInfo.password = prompt(`请为账户 ${resp.data} 设置新的密码：`, "password")
-                $.ajax({
-                    method: 'POST',
-                    url: masterApi,
-                    data: JSON.stringify(userInfo)
-                }).done((resp) => {
-                    // @ts-ignore
-                    Toast.fire({
-                        type: 'success',
-                        title: `账户 ${resp.data} 密码重置成功，请重新登录`,
-                    })
-                    setTimeout(function () {
-                        window.location.href = "/"
-                    }, 3000)
-                })
+
+                let r = prompt(`请为账户 ${resp.data} 设置新的密码：`, "password")
+                if (r == undefined ) {
+                    toastr.info("用户已取消")
+                } else {
+                    userInfo.password =r
+                        PostData(masterApi, userInfo).then((r) => {
+                            if (r == undefined) {
+                                return
+                            }
+
+                            let resp = r as ServerResponse
+                            toastr.success(`账户 ${resp.data} 密码重置成功，请重新登录`)
+                            setTimeout(function () {
+                                window.location.href = "/"
+                            }, 3000)
+                        })
+                }
             } else {
                 // @ts-ignore
-                Toast.fire({
-                    type: 'error',
-                    title: resp.msg,
-                    showConfirmButton: true,
-                });
+                toastr.error(resp.msg, "错误")
             }
         })
     }

@@ -1,5 +1,3 @@
-require("jquery")
-require("jquery-validation")
 import toastr = require("toastr");
 import {PostData} from "../common/common";
 
@@ -12,7 +10,7 @@ $.validator.setDefaults({
         };
         toastr.info('正在登录中……')
 
-        PostData('/api/v1/user/login', userLoginInfo).then((data) => {
+        PostData('/api/user/login', userLoginInfo).then((data) => {
             if (data == undefined) {
                 toastr.error("服务器无反馈")
             }
