@@ -182,7 +182,6 @@ export class class_list_screen {
         // this.obj_table.load(gid, show_page, -1, -1)
     }
 
-
     oprRender(data: any, options: any, row: any) {
         let op = (row['progress'] === '审核完成') ? "view" : "author"
 
@@ -356,7 +355,6 @@ export class class_list_screen {
             },
         });
     }
-
 
     OpBindOnButtons(parent: JQuery) {
         parent.on("click", ".custom-btn-open-admin", (e: any) => {

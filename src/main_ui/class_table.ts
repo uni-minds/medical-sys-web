@@ -29,7 +29,7 @@ export class class_table_object {
     current_count = 10;
 
     constructor(parent: JQuery, api_data: string, fields: jqGridField[], group_fields: string[]) {
-        console.log("create class_table", parent, api_data, fields, group_fields)
+        // console.log("create class_table", parent, api_data, fields, group_fields)
         this.api_data = api_data
 
         parent.append(this.ref_main).append(this.ref_pager);
@@ -44,7 +44,7 @@ export class class_table_object {
             height: 1200,
             rowList: [5, 10, 20, 30, 50],
             rowNum: 10,
-            autowidth: false,
+            autowidth: true,
             pager: this.ref_pager,
             grouping: group_fields.length > 0,
             groupingView: {
@@ -54,6 +54,9 @@ export class class_table_object {
                 groupCollapse: false
             },
         });
+
+        //列居中
+        $(".ui-th-column").css("text-align","center")
 
         let intv = setInterval(() => {
             if (!this.page_resize()) {
@@ -100,6 +103,9 @@ export class class_table_object {
             console.warn("table lost")
             return false
         }
+        // var p = this.ref_main.closest('[class*="col-"]')
+        // this.ref_main.jqGrid("setGridWidth", p.width())
+        // return true
     }
 
     reload() {

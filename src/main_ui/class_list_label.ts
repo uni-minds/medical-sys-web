@@ -21,7 +21,7 @@ export class class_list_label {
     objSelectorHeader
 
     ref_card_body: JQuery | undefined
-    obj_table: class_table_object |undefined
+    obj_table: class_table_object | undefined
 
     userSelectGroupId = 0
     userSelectViewId = ""
@@ -59,7 +59,7 @@ export class class_list_label {
     async Start() {
         let num = 12 / this.medialist_selectors.length
         for (const selector of this.medialist_selectors) {
-            console.log("create selector:",selector)
+            console.log("create selector:", selector)
             let obj_selector_group = $(`<div class="col-md-${num}"></div>`)
             let optionTitle = $(`<div class="p-0 text-info">${selector.name}</div>`)
             let optionGroup = $('<div class="pb-0" style="width:100%"></div>')
@@ -296,27 +296,34 @@ export class class_list_label {
         fields.push({
             label: "名称",
             name: "name",
-            width: 80,
+            width: 160,
             hidden: false,
             summaryType: '',
-            formatter: this.FormatName
+            formatter: undefined
         })
         fields.push({
             label: "时长",
             name: "duration",
-            width: 100,
-            hidden: true,
+            width: 40,
+            hidden: false,
             summaryType: 'sum',
-            formatter: TimeFormat
+            formatter: this.FormatTime
         })
-        fields.push({label: "总帧", name: "frames", width: 30, hidden: false, summaryType: '', formatter: undefined})
+        fields.push({
+            label: "总帧",
+            name: "frames",
+            width: 30,
+            hidden: false,
+            summaryType: '',
+            formatter: this.FormatText
+        })
         fields.push({
             label: "切面",
             name: "view",
             width: 40,
             hidden: false,
             summaryType: '',
-            formatter: this.FormatViewContent
+            formatter: this.FormatText
         })
         fields.push({
             label: "标注",
@@ -334,40 +341,39 @@ export class class_list_label {
             summaryType: '',
             formatter: this.LabelReviewRender
         })
-        fields.push({label: "备注", name: "memo", width: 80, hidden: false, summaryType: '', formatter: undefined})
+        fields.push({
+            label: "备注",
+            name: "memo",
+            width: 80,
+            hidden: false,
+            summaryType: '',
+            formatter: this.FormatText
+        })
         this.obj_table = new class_table_object(ref_media_table, BuildURL(this.urlPullData, this.urlPullDataParams), fields, [])
+        //垂直居中
+        $(".ui-jqgrid tr.jqgrow td").css("vertical-align", "text-top").css("padding-left", "2px")
+        $(".ui-jqgrid .ui-jqgrid-htable thead th").css("padding-left", "2px")
+
     }
 
-    /**
-     * @return {string}
-     */
-    FormatViewContent(value: any): string {
-        // console.log("View:",value)
-        if (value.startsWith('[')) {
-            let v = JSON.parse(value);
-            let t = "";
-            v.forEach((e: string) => {
-                t += e + "; "
-            });
-            t = t.substring(0, t.length - 2);
-            return t
-
-        } else {
-            return value
-        }
+    FormatText(value: string): string {
+        let obj = $("<div class='text-center'></div>")
+        obj.text(value)
+        return obj.prop("outerHTML")
     }
 
     FormatId(value: string) {
         let ids = value.split(".")
+        let obj = $("<div class='text-center'></div>")
         if (ids.length <= 1) {
-            return value
+            obj.text(ids.toString())
         } else if (ids.length >= 12) {
-
-            return `D${ids[11]}`
+            obj.text(`D${ids[11]}`)
         } else {
-            console.log(value)
-            return "None"
+            obj.text("None")
         }
+        let html = obj.prop("outerHTML")
+        return html
     }
 
     FormatName(value: string): string {
@@ -379,12 +385,13 @@ export class class_list_label {
         const SOP_COMPREHENSIVE_SR = "1.2.840.10008.5.1.4.1.1.88.33"
 
         if (value.indexOf(dicom_us_id) >= 0) {
-            // dicom us
-            return value.replace(dicom_us_id, "d.us.")
-        } else {
-            // console.log("miss",value)
-            return value
+            value = value.replace(dicom_us_id, "d.us.")
         }
+        return this.FormatText(value)
+    }
+
+    FormatTime(value: number): string {
+        return this.FormatText(TimeFormat(value))
     }
 
     /**
