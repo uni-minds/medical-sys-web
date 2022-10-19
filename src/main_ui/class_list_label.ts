@@ -34,7 +34,7 @@ export class class_list_label {
 
 
     constructor(parent: JQuery, selectors: MedialistGroupDefine[], api_root: string, ui_root: string, media_type: string) {
-        console.log("init list_label", selectors, api_root, ui_root, media_type)
+        // console.log("init list_label", selectors, api_root, ui_root, media_type)
         this.medialist_selectors = selectors
         this.api_root = api_root
         this.api_labelsys = api_root + "/labelsys/stream/index"
@@ -59,7 +59,7 @@ export class class_list_label {
     async Start() {
         let num = 12 / this.medialist_selectors.length
         for (const selector of this.medialist_selectors) {
-            console.log("create selector:", selector)
+            // console.debug("create selector:", selector)
             let obj_selector_group = $(`<div class="col-md-${num}"></div>`)
             let optionTitle = $(`<div class="p-0 text-info">${selector.name}</div>`)
             let optionGroup = $('<div class="pb-0" style="width:100%"></div>')
@@ -315,7 +315,7 @@ export class class_list_label {
             width: 30,
             hidden: false,
             summaryType: '',
-            formatter: this.FormatText
+            formatter: FormatText
         })
         fields.push({
             label: "切面",
@@ -323,7 +323,7 @@ export class class_list_label {
             width: 40,
             hidden: false,
             summaryType: '',
-            formatter: this.FormatText
+            formatter: FormatText
         })
         fields.push({
             label: "标注",
@@ -347,19 +347,13 @@ export class class_list_label {
             width: 80,
             hidden: false,
             summaryType: '',
-            formatter: this.FormatText
+            formatter: FormatText
         })
         this.obj_table = new class_table_object(ref_media_table, BuildURL(this.urlPullData, this.urlPullDataParams), fields, [])
         //垂直居中
         $(".ui-jqgrid tr.jqgrow td").css("vertical-align", "text-top").css("padding-left", "2px")
         $(".ui-jqgrid .ui-jqgrid-htable thead th").css("padding-left", "2px")
 
-    }
-
-    FormatText(value: string): string {
-        let obj = $("<div class='text-center'></div>")
-        obj.text(value)
-        return obj.prop("outerHTML")
     }
 
     FormatId(value: string) {
@@ -387,11 +381,12 @@ export class class_list_label {
         if (value.indexOf(dicom_us_id) >= 0) {
             value = value.replace(dicom_us_id, "d.us.")
         }
-        return this.FormatText(value)
+        return FormatText(value)
     }
 
     FormatTime(value: number): string {
-        return this.FormatText(TimeFormat(value))
+
+        return FormatText(TimeFormat(value))
     }
 
     /**
@@ -706,5 +701,11 @@ export class class_list_label {
             })
         })
     }
+}
+
+function FormatText(value: string): string {
+    let obj = $("<div class='text-center'></div>")
+    obj.text(value)
+    return obj.prop("outerHTML")
 }
 

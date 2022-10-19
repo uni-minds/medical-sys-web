@@ -36,7 +36,7 @@ export class class_menu {
             let resp = r as ServerResponse
             if (resp.code == 200) {
                 let menu_data = resp.data as ServerMenu[];
-                console.debug("menu_data",menu_data)
+                // console.debug("menu_data",menu_data)
                 menu_data.forEach((menu) => {
                     if (menu.child && menu.child.length > 0) {
                         let parent = this.create_parent(menu.name, menu.icon);
